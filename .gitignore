@@ -90,3 +90,5 @@ sw.*
 *.swp
 
 ./server/keys/keys.dev.js
+
+./static/uploads
