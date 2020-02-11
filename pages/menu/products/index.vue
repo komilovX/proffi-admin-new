@@ -22,13 +22,13 @@
       style="width: 100%">
 
         <el-table-column
-        min-width="250"
+        min-width="300"
         label="Название"
         show-overflow-tooltip
         >
           <template slot-scope="{row:{name, photo}}">
             <div class="img-part df">
-              <img v-image="photo" width="48" height="35" class="mr05">
+              <img v-image="photo" width="48" height="35" class="mr05" style="min-width: 48px">
               <span>{{name}}</span>
             </div>
           </template>
@@ -37,6 +37,13 @@
         min-width="200"
         prop="category_name"
         label="Категория"
+        align="left"
+        show-overflow-tooltip
+        />
+        <el-table-column
+        min-width="180"
+        prop="brand"
+        label="Бренд"
         align="left"
         show-overflow-tooltip
         />

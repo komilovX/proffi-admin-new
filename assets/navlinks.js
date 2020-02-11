@@ -4,6 +4,7 @@ export const navlinks =[
   {name:'Онлайн заказы',path:'/online'},
   {name:'Каталог',path:'/menu',icon:'el-icon-document'},
   {name:'Товары',path:'/products'},
+  {name:'Бренды',path:'/brands'},
   {name:'Категории товаров',path:'/categories'},
   {name:'Склад',path:'/storage',icon:'el-icon-receiving'},
   {name:'Поставки',path:'/supply'},
@@ -23,6 +24,7 @@ export const routes =[
   {name:'Каталог',path:'/menu',icon:'el-icon-document', hidden: true},
   {name:'Товары',path:'/products', origin: '/menu/products'},
   {name:'Категории товаров',path:'/categories', origin: '/menu/categories'},
+  {name:'Бренды',path:'/brands', origin: '/menu/brands' },
   {name:'Склад',path:'/storage',icon:'el-icon-receiving', hidden: true},
   {name:'Поставки',path:'/supply', origin:'/storage/supply'},
   {name:'Поставщики',path:'/suppliers', origin:'/storage/suppliers'},
@@ -42,4 +44,4 @@ export const sortlinks = [
   {path:'/send_message'},
   {path:'/access'},
 ]
-export const hiddenChildren = ['categories_form', 'products_form', 'suppliers_form','store_form', 'supply_form', 'access_form']
+export const hiddenChildren = ['categories_form', 'products_form', 'suppliers_form', 'store_form', 'supply_form', 'access_form', 'brands_form']

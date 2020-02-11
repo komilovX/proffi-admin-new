@@ -5,6 +5,8 @@ export const actions = {
       fd.append('name', form.name)
       fd.append('category_id', form.category_id)
       fd.append('category_name', form.category_name)
+      fd.append('brand', form.brand)
+      fd.append('brand_id', form.brand_id)
       fd.append('image', form.image, form.image.name)
       fd.append('cost_netto', form.cost_netto)
       fd.append('cost', form.cost)

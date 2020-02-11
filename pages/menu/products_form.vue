@@ -14,6 +14,11 @@
             <el-option v-for="c in categoryList" :key="c.id" :label="c.name" :value="c.id" :style="{'padding-left':c.padding+'px'}"/>
           </el-select>
         </el-form-item>
+        <el-form-item label="Бранд" prop="brand">
+          <el-select v-model="productForm.brand_id" style="min-width:35vw">
+            <el-option v-for="c in brands" :key="c.id" :label="c.name" :value="c.id" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="Цена" prop="price">
           <div class="df" style="max-width:35vw">
             <label class="mr1">
@@ -92,11 +97,13 @@
 <script>
 import categoryList from '@/mixins/categoryList';
 export default {
-  async fetch({store}) {
+  async asyncData({store}) {
     try {
       if (store.getters['category/categories'].length === 0) {
         await store.dispatch('category/findAllCategories')
       }
+      const brands = await store.dispatch('brands/findAllBrands')
+      return { brands }
     } catch (error) {
 
     }
@@ -117,6 +124,7 @@ export default {
       productForm: {
         name: '',
         category: null,
+        brand_id: null,
         price: ['', '', '',],
         comment: '',
       },
@@ -126,6 +134,9 @@ export default {
           { min: 3, message: 'Длина должна быть не менее 3 букв', trigger: 'blur' }
         ],
         category: [
+          { required: true, message: 'Пожалуйста, введите название деятельности', trigger: 'change' }
+        ],
+        brand_id: [
           { required: true, message: 'Пожалуйста, введите название деятельности', trigger: 'change' }
         ],
         price: [
@@ -189,10 +200,13 @@ export default {
           this.loading = true
           let {name} = this.$store.getters['category/categories'].find(f => f.id === this.productForm.category)
           const [cost_netto, percent, cost] = this.productForm.price
+          const brand = this.brands.find(v => v.id == this.productForm.brand_id)
           const formData = {
             name: this.productForm.name,
             category_id: this.productForm.category,
             category_name: name,
+            brand: brand.name,
+            brand_id: this.productForm.brand_id,
             image: this.file.raw,
             cost_netto,
             cost,

@@ -172,7 +172,6 @@ module.exports.changeResidue = async (req, res) => {
         },{
           where: {product_id: +p.id}
         })
-        console.log('remainder.limit >= (remainder.residue - p.amount)',remainder.limit >= (remainder.residue - p.amount));
         if (remainder.limit >= (remainder.residue - p.amount) && bool == false) {
           bool = true
           io.emit('checkRemainder', true)

@@ -3,7 +3,7 @@ const upload = require('../middleware/upload');
 const router = Router()
 
 const ctr = require('../controller/menu.controller');
-
+const brand = require('../controller/brand.controller');
 // /api/menu/category
 
 router.post(
@@ -66,4 +66,28 @@ router.put(
   ctr.hideProductById
 )
 
+// /api/menu/brands
+
+router.get(
+  '/brands',
+  brand.findAllBrands
+)
+router.post(
+  '/brands',
+  upload.single('image'),
+  brand.createBrand
+)
+router.get(
+  '/brands/:id',
+  brand.findById
+)
+router.put(
+  '/brands/:id',
+  upload.single('image'),
+  brand.updateById
+)
+router.delete(
+  '/brands/:id',
+  brand.deleteById
+)
 module.exports = router
