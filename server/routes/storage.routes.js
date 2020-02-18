@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const router = Router()
-
+const pagination = require('../middleware/pagination');
 const supplier = require('../controller/supplier.controller');
 const supply = require('../controller/supply.controller');
 const store = require('../controller/store.controller');
@@ -37,10 +37,12 @@ router.post(
 )
 router.get(
   '/supply',
+  pagination('supply'),
   supply.findAllSupply
 )
 router.get(
   '/supply/calculations',
+  pagination('remainder'),
   supply.findAllCalculations
 )
 router.put(

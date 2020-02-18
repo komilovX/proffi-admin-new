@@ -7,6 +7,7 @@
     <div class="p1">
       <el-table
       :data="messages"
+      :header-row-class-name="rowClassName"
       tooltip-effect="light"
       style="width: 100%"
       class="table"
@@ -69,7 +70,6 @@
             </div>
           </template>
         </el-table-column>
-
       </el-table>
     </div>
   </div>
@@ -110,7 +110,7 @@ export default {
         console.log(error)
       }
     },
-   formaterDate(date) {
+    formaterDate(date) {
      const options = {
         year: 'numeric', month: 'numeric', day: 'numeric',
         hour: 'numeric', minute: 'numeric',
@@ -118,6 +118,9 @@ export default {
       }
 
       return new Date(date).toLocaleString('ru-RU', options)
+    },
+    rowClassName({row, rowIndex}) {
+      return 'table-header'
     },
   },
 }

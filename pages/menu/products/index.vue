@@ -15,6 +15,7 @@
     </div>
     <div class="table p05">
       <el-table
+      v-loading="loading"
       :data="products.filter(val => !search || val.name.toLowerCase().includes(search.toLowerCase()) || val.category_name.toLowerCase().includes(search.toLowerCase()))"
       tooltip-effect="light"
       :row-class-name="tableRowClassName"
@@ -48,27 +49,10 @@
         show-overflow-tooltip
         />
         <el-table-column
-        min-width="200"
-        label="Себестоимость"
-        align="center"
-        >
-          <template slot-scope="{row: {cost_netto} }">
-            {{ formatCurrency(cost_netto) }}
-          </template>
-        </el-table-column>
-        <el-table-column
         label="Цена"
         >
-          <template slot-scope="{row: {cost} }">
-            {{ formatCurrency(cost) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-        label="Наценка"
-        align="center"
-        >
-          <template slot-scope="{row: {percent} }">
-            {{ percent+'%' }}
+          <template slot-scope="{row: {price} }">
+            {{ formatCurrency(price) }}
           </template>
         </el-table-column>
         <el-table-column>
@@ -90,27 +74,30 @@
             </div>
           </template>
         </el-table-column>
-
       </el-table>
+      <app-pagination :size="size" @paginationChange="currentChange($event)" v-if="size > 30" />
     </div>
   </div>
 </template>
 
 <script>
+import AppPagination from '@/components/AppPagination'
 export default {
   async asyncData({store, error}) {
     try {
-      const products = await store.dispatch('product/findAllProducts')
-      return {products}
+      const {data, size} = await store.dispatch('product/findAllProducts',{page: 1, limit: 30})
+      return {products: data, size}
     } catch (e) {
       error(e)
     }
   },
   data: () => ({
     search: '',
+    loading: false,
     hiddenRows: [],
     hideStatus: 'Скрыть во всех заведениях',
   }),
+  components: {AppPagination},
   mounted() {
     this.products.filter(f => {
       if (f.hidden == 1) {
@@ -127,6 +114,18 @@ export default {
         return 'hidden-row';
       }
       return '';
+    },
+    async currentChange(val) {
+      try {
+        this.loading = true
+        const response = await this.$store.dispatch('product/findAllProducts',{page: val, limit: 30})
+        this.products = response.data
+        this.size = response.size
+        this.loading = false
+      } catch (e) {
+        this.loading = false
+        console.log(e)
+      }
     },
     async handleCommand({command, id}){
       try {

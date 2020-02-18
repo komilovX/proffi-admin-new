@@ -15,6 +15,7 @@
     </div>
     <div class="table p05 supplier-table">
       <el-table
+      v-loading="loading"
       :data="supplies.filter(val => !search || val.supplier_name.toLowerCase().includes(search.toLowerCase()))"
       tooltip-effect="light"
       :header-row-class-name="rowClassName"
@@ -33,26 +34,36 @@
               prop="name"
               size="small"
               label="Товар"
-              width="300"
+              width="200"
               show-overflow-tooltip
               />
               <el-table-column
               prop="amount"
               label="Кол-во"
               align="center"
-              width="250"
+              width="150"
               />
               <el-table-column
               label="Цена за единицу"
               align="center"
-              width="250"
+              width="200"
               >
                 <template slot-scope="{row: {cost}}">
                   {{ formatCurrency(cost) }}
                 </template>
               </el-table-column>
               <el-table-column
+              label="Цена за продажу"
+              align="center"
+              width="200"
+              >
+                <template slot-scope="{row: {price}}">
+                  {{ formatCurrency(price) }}
+                </template>
+              </el-table-column>
+              <el-table-column
               label="Общая сумма"
+              width="250"
               align="right"
               >
                 <template slot-scope="{row: {total}}">
@@ -114,8 +125,8 @@
             </div>
           </template>
         </el-table-column>
-
       </el-table>
+      <app-pagination :size="size" @paginationChange="currentChange($event)" v-if="size > 30" />
     </div>
   </div>
 </template>
@@ -126,18 +137,21 @@
 </style>
 
 <script>
+import AppPagination from '@/components/AppPagination'
 export default {
   async asyncData({store}) {
     try {
-      const supplies = await store.dispatch('supply/findAllSupplies')
-      return { supplies }
+      const {data, size} = await store.dispatch('supply/findAllSupplies',{page: 1, limit: 30})
+      return { supplies: data, size }
     } catch (e) {
-
+      console.log(e)
     }
   },
   data: () => ({
     search: '',
+    loading: false
   }),
+  components: {AppPagination},
   methods:{
     goToForm(){
       this.$router.push(`/storage/supply_form`)
@@ -147,6 +161,18 @@ export default {
         return 'deleted-row'
       }
       return ''
+    },
+    async currentChange(val) {
+      try {
+        this.loading = true
+        const response = await this.$store.dispatch('supply/findAllSupplies',{page: val, limit: 30})
+        this.supplies = response.data
+        this.size = response.size
+        this.loading = false
+      } catch (e) {
+        this.loading = false
+        console.log(e)
+      }
     },
     handleCommand( id ){
       const text = 'Уверены, что хотите удалить этого поставка?'

@@ -52,32 +52,38 @@
               </el-table-column>
               <el-table-column
               label="Количество"
-              width="220"
+              width="180"
               >
                 <template slot-scope="{$index}">
-                  <el-input type="text" @input="checkValue($index)" v-model="supplyForm.items[$index].amount" style="width: 160px" class="mr1">
+                  <el-input type="text" @input="checkValue($index)" v-model="supplyForm.items[$index].amount">
                     <template slot="append">ШТ</template>
                   </el-input>
-                  <span><i class="el-icon-close"></i></span>
                 </template>
               </el-table-column>
               <el-table-column
               label="Цена за единицу"
-              width="250"
+              width="180"
               >
                 <template slot-scope="{$index}">
                   <el-input @input="multiplyValue($index)" type="text" v-model="supplyForm.items[$index].cost">
-                    <template slot="append">СУМ</template>
+                  </el-input>
+                </template>
+              </el-table-column>
+              <el-table-column
+              label="Цена за продажу"
+              width="180"
+              >
+                <template slot-scope="{$index}">
+                  <el-input type="text" v-model="supplyForm.items[$index].price">
                   </el-input>
                 </template>
               </el-table-column>
               <el-table-column
               label="Общая сумма"
-              width="320"
+              width="260"
               >
                 <template slot-scope="{$index}">
-                  <el-input type="text" @input="checkTotal($index)" v-model="supplyForm.items[$index].total" style="width: 240px" class="mr1 vam">
-                    <template slot="append">СУМ</template>
+                  <el-input type="text" @input="checkTotal($index)" v-model="supplyForm.items[$index].total" style="width: 180px" class="mr1 vam">
                   </el-input>
                   <el-button @click="deleteItem($index)" type="warning" style="display: inline" size="small" icon="el-icon-delete" plain circle />
                 </template>
@@ -113,7 +119,6 @@ export default {
       value.forEach(v => {
         delete v.name
         Object.keys(v).forEach((i, index) => {
-          console.log('value', v[`${i}`]);
           if (!v[`${i}`]) {
             checkIsEmpty = true
             return

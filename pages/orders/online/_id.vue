@@ -99,23 +99,25 @@
       </div>
       <el-table
        :data="products"
+       v-loading="loading2"
        @selection-change="handleSelectionChange"
        ref="multipleTable"
        >
         <el-table-column type="selection" width="55" />
         <el-table-column prop="name" label="Name" width="200" />
-        <el-table-column prop="cost" label="Цена" width="200" />
+        <el-table-column prop="price" label="Цена" width="200" />
         <el-table-column prop="amount" label="Кол-во" width="200" align="center" />
         <el-table-column
           label="Управлять"
           align="center"
         >
           <template slot-scope="{row}">
-            <i class="el-icon-minus mr05" @click="minusAmount(row)" />
-            <i class="el-icon-plus mr1" @click="plusAmount(row)" />
+            <i class="el-icon-minus mr05 control-i" @click="minusAmount(row)" />
+            <i class="el-icon-plus mr1 control-i" @click="plusAmount(row)" />
           </template>
         </el-table-column>
       </el-table>
+      <app-pagination :size="size" :limit="50" @paginationChange="currentChange($event)" v-if="size > 50" />
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogTableVisible = false">Отменить</el-button>
         <el-button type="primary" :disabled="selectedProducts.length == 0" @click="addSelectedProduct">Добавить</el-button>
@@ -127,20 +129,21 @@
     :visible.sync="templateVisible"
     width="50%"
     >
-    <el-input
-    type="textarea"
-    :rows="5"
-    placeholder="Please input"
-    v-model="template"
-    />
-    <span slot="footer" class="dialog-footer">
-      <el-button @click="templateVisible = false">Отменить</el-button>
-      <el-button type="primary" @click="sendMessage" :loading="sendLoading">Отправить</el-button>
-    </span>
+      <el-input
+      type="textarea"
+      :rows="5"
+      placeholder="Please input"
+      v-model="template"
+      />
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="templateVisible = false">Отменить</el-button>
+        <el-button type="primary" @click="sendMessage" :loading="sendLoading">Отправить</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
 <script>
+import AppPagination from '@/components/AppPagination'
 export default {
   async asyncData({store, route, error}) {
     try {
@@ -153,6 +156,8 @@ export default {
   data(){
     return{
       loading: false,
+      loading2: false,
+      size: null,
       processLoading: false,
       sendLoading: false,
       template: '',
@@ -162,6 +167,7 @@ export default {
       selectedProducts: []
     }
   },
+  components: {AppPagination},
   methods:{
     formaterDate(date) {
       const options = {
@@ -197,11 +203,11 @@ export default {
       if (!this.products) {
         try {
           this.loading = true
-          const products = await this.$store.dispatch('product/findAllProducts')
-          this.products = products.map(p => {
-            p.amount = 1
-            return p
+          const {data, size} = await this.$store.dispatch('product/findAllProducts',{page: 1, limit: 50})
+          this.products = data.map(p => {
+            return {name: p.name, amount: 1, cost: p.price}
           })
+          this.size = size
           this.loading = false
           this.dialogTableVisible = true
         } catch (e) {
@@ -210,6 +216,10 @@ export default {
         }
       }
       else {
+        this.products = this.products.map(p => {
+          p.amount = 1;
+          return p
+        })
         this.dialogTableVisible = true
       }
     },
@@ -296,10 +306,25 @@ export default {
         }
       })
     },
+    async currentChange(val) {
+      try {
+        this.loading2 = true
+        const {data, size} = await this.$store.dispatch('product/findAllProducts',{page: 1, limit: 50})
+        this.products = data.map(p => {
+            return {name: p.name, amount: 1, cost: p.price}
+          })
+        this.size = size
+        this.loading2 = false
+      } catch (e) {
+        this.loading2 = false
+        console.log(e)
+      }
+    },
   },
   computed: {
     calculateTotal() {
-      return this.ordered_products.reduce((acc, val) => acc+(Number(val.amount*val.cost)),0)
+      const total = this.ordered_products.reduce((acc, val) => acc+(Number(val.amount*val.cost)),0)
+      return new Intl.NumberFormat('ru').format(total)
     },
   }
 }
@@ -311,6 +336,10 @@ export default {
   }
   .orderlist #delete {
     color: #F56C6C
+  }
+  .control-i{
+    color: #2688cd;
+    cursor: pointer;
   }
 </style>
 <style lang="scss" scoped>

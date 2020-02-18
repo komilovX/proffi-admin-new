@@ -8,9 +8,9 @@ export const actions = {
       throw e
     }
   },
-  async findAllSupplies({commit}) {
+  async findAllSupplies({commit}, {page=1, limit=30}) {
     try {
-      return this.$axios.$get('api/storage/supply')
+      return this.$axios.$get(`api/storage/supply?page=${page}&limit=${limit}`)
     } catch (e) {
       commit('setError', e, {root: true})
       throw e
@@ -64,9 +64,9 @@ export const actions = {
       throw e
     }
   },
-  async findAllCalculations({commit}) {
+  async findAllCalculations({commit}, {page = 1, limit = 30}) {
     try {
-      return this.$axios.$get(`api/storage/supply/calculations`)
+      return this.$axios.$get(`api/storage/supply/calculations?page=${page}&limit=${limit}`)
     } catch (e) {
       commit('setError', e, {root: true})
       throw e

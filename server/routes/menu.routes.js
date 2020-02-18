@@ -1,5 +1,6 @@
 const {Router} = require('express')
 const upload = require('../middleware/upload');
+const pagination = require('../middleware/pagination');
 const router = Router()
 
 const ctr = require('../controller/menu.controller');
@@ -46,6 +47,7 @@ router.post(
 )
 router.get(
   '/product',
+  pagination('products'),
   ctr.findAllProducts
 )
 router.get(
@@ -70,6 +72,7 @@ router.put(
 
 router.get(
   '/brands',
+  pagination('brand'),
   brand.findAllBrands
 )
 router.post(

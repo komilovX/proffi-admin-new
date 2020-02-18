@@ -13,9 +13,10 @@ const Product = sequelize.define('products', {
   category_id: Sequelize.INTEGER,
   brand: Sequelize.STRING,
   brand_id: Sequelize.INTEGER,
-  cost: Sequelize.STRING,
-  cost_netto: Sequelize.STRING,
-  percent: Sequelize.STRING(4),
+  price: {
+    type: Sequelize.STRING,
+    defaultValue: 0
+  },
   comment: {
     type: Sequelize.STRING(800),
   },

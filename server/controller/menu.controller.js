@@ -136,9 +136,6 @@ module.exports.createProduct = async (req, res) => {
       category_id: req.body.category_id,
       brand: req.body.brand,
       brand_id: req.body.brand_id,
-      cost: req.body.cost,
-      cost_netto: req.body.cost_netto,
-      percent: req.body.percent,
       comment: req.body.comment,
       photo: `/${req.file.filename}`,
     })
@@ -159,8 +156,7 @@ module.exports.findProductById = async (req, res) => {
 
 module.exports.findAllProducts = async (req, res) => {
   try {
-    const products = await Product.findAll({raw: true})
-    res.json(products)
+    res.json(res.result)
   } catch (error) {
     console.log('error', error);
     res.status(500).json(error)
@@ -180,9 +176,6 @@ module.exports.updateProductById = async (req, res) => {
           category_id: req.body.category_id,
           brand: req.body.brand,
           brand_id: req.body.brand_id,
-          cost: req.body.cost,
-          cost_netto: req.body.cost_netto,
-          percent: req.body.percent,
           comment: req.body.comment,
           photo: `/${req.file.filename}`,
          },
@@ -199,9 +192,6 @@ module.exports.updateProductById = async (req, res) => {
           category_id: req.body.category_id,
           brand: req.body.brand,
           brand_id: req.body.brand_id,
-          cost: req.body.cost,
-          cost_netto: req.body.cost_netto,
-          percent: req.body.percent,
           comment: req.body.comment,
          },
         { where: { id: req.params.id }

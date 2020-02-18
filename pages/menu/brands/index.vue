@@ -16,6 +16,7 @@
     <div class="table p05 ctg">
       <el-table
       :data="brands.filter(val => !search || val.name.toLowerCase().includes(search.toLowerCase()))"
+      v-loading="loading"
       style="width: 100%"
       >
         <el-table-column
@@ -24,7 +25,7 @@
         >
           <template slot-scope="{row:{photo,name}}" class="ml1">
             <div class="img-part df">
-              <img v-image="photo" width="48" height="35" class="mr05">
+              <img :src="`http://207.154.223.158:8000/uploads${photo}`" width="48" height="35" class="mr05">
               <span>{{name}}</span>
             </div>
           </template>
@@ -50,28 +51,43 @@
             </div>
           </template>
         </el-table-column>
-
       </el-table>
+      <app-pagination :size="size" @paginationChange="currentChange($event)" v-if="size > 30" />
     </div>
   </div>
 </template>
 
 <script>
+import AppPagination from '@/components/AppPagination'
 export default {
   async asyncData({store, error}) {
     try {
-      const brands = await store.dispatch('brands/findAllBrands')
-      return {brands}
+      const {data, size} = await store.dispatch('brands/findAllBrands',{page: 1, limit: 30})
+      return {brands: data, size}
     } catch (e) {
       error(e)
     }
   },
   data: () => ({
-    search: ''
+    search: '',
+    loading: false
   }),
+  components: {AppPagination},
   methods:{
     goToForm(){
       this.$router.push(`/menu/brands_form`)
+    },
+    async currentChange(val) {
+      try {
+        this.loading = true
+        const response = await this.$store.dispatch('brands/findAllBrands',{page: val, limit: 30})
+        this.brands = response.data
+        this.size = response.size
+        this.loading = false
+      } catch (e) {
+        this.loading = false
+        console.log(e)
+      }
     },
     async handleCommand({command, id}){
       try {

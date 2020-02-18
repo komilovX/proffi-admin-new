@@ -18,9 +18,9 @@ export const actions = {
       throw error
     }
   },
-  async findAllProducts({commit}) {
+  async findAllProducts({commit}, {page=1, limit=30}) {
     try {
-      return await this.$axios.$get('api/menu/product')
+      return await this.$axios.$get(`api/menu/product?page=${page}&limit=${limit}`)
     } catch (error) {
       commit('setError',error, { root: true })
       throw error

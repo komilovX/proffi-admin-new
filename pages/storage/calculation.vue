@@ -14,6 +14,7 @@
     </div>
     <div class="table p05 supplier-table">
       <el-table
+      v-loading="loading"
       :data="remainders.filter(val => !search || val.product_name.toLowerCase().includes(search.toLowerCase()))"
       tooltip-effect="light"
       :row-class-name="tableRowClassName"
@@ -88,6 +89,7 @@
         </template>
       </el-table-column>
       </el-table>
+      <app-pagination :size="size" @paginationChange="currentChange($event)" v-if="size > 30" />
     </div>
   </div>
 </template>
@@ -97,28 +99,43 @@
   }
 </style>
 <script>
+import AppPagination from '@/components/AppPagination'
 export default {
   async asyncData({store}) {
     try {
-      const remainders = await store.dispatch('supply/findAllCalculations')
-      return { remainders }
+      const {data, size} = await store.dispatch('supply/findAllCalculations',{page: 1, limit: 30})
+      return { remainders: data, size }
     } catch (e) {
-
+      console.log(e)
     }
   },
   data: () => ({
     search: '',
-    list: null
+    list: null,
+    loading: false,
   }),
   mounted(){
     this.getList()
   },
+  components: {AppPagination},
   methods: {
     tableRowClassName({row, rowIndex}) {
       if (row.limit>= row.residue) {
         return 'deleted-row'
       }
       return ''
+    },
+    async currentChange(val) {
+      try {
+        this.loading = true
+        const response = await this.$store.dispatch('supply/findAllCalculations',{page: val, limit: 30})
+        this.remainders = response.data
+        this.size = response.size
+        this.loading = false
+      } catch (e) {
+        this.loading = false
+        console.log(e)
+      }
     },
     cancelEdit(row) {
       row.limit = row.orginalLimit

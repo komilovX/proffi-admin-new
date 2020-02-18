@@ -33,6 +33,18 @@
               v-model="supplyForm.comment">
             </el-input>
           </el-form-item>
+          <el-upload
+            ref="upload"
+            class="upload-demo"
+            action="http://localhost:3000"
+            :on-change="handleAvatarChange"
+            :auto-upload="false"
+            :on-exceed="handleExceed"
+            :on-remove="handleRemove"
+            :limit="1"
+            >
+            <el-button size="small" type="primary">Файл excel <i class="el-icon-upload el-icon-right"/></el-button>
+          </el-upload>
           <el-form-item
           label-width="0"
           prop="items"
@@ -44,40 +56,47 @@
               label="Наименование"
               width="300"
               >
-                <template slot-scope="{$index}">
-                  <el-select v-model="supplyForm.items[$index].id" style="width: 100%">
+                <template slot-scope="{row,$index}">
+                  <span v-if="row.conflict" class="top-conflict">{{row.conflict}}</span>
+                  <el-select v-model="supplyForm.items[$index].id" style="width: 100%" :class="{'mb1':!!row.conflict} ">
                     <el-option v-for="s in products" :key="s.id" :label="s.name" :value="s.id" />
                   </el-select>
                 </template>
               </el-table-column>
               <el-table-column
               label="Количество"
-              width="220"
+              width="180"
               >
                 <template slot-scope="{$index}">
                   <el-input type="text" @input="checkValue($index)" v-model="supplyForm.items[$index].amount" style="width: 160px" class="mr1">
                     <template slot="append">ШТ</template>
                   </el-input>
-                  <span><i class="el-icon-close"></i></span>
                 </template>
               </el-table-column>
               <el-table-column
               label="Цена за единицу"
-              width="250"
+              width="180"
               >
                 <template slot-scope="{$index}">
                   <el-input @input="multiplyValue($index)" type="text" v-model="supplyForm.items[$index].cost">
-                    <template slot="append">СУМ</template>
+                  </el-input>
+                </template>
+              </el-table-column>
+              <el-table-column
+              label="Цена за продажу"
+              width="180"
+              >
+                <template slot-scope="{$index}">
+                  <el-input type="text" v-model="supplyForm.items[$index].price">
                   </el-input>
                 </template>
               </el-table-column>
               <el-table-column
               label="Общая сумма"
-              width="320"
+              width="250"
               >
                 <template slot-scope="{$index}">
-                  <el-input type="text" @input="checkTotal($index)" v-model="supplyForm.items[$index].total" style="width: 230px" class="mr1">
-                    <template slot="append">СУМ</template>
+                  <el-input type="text" @input="checkTotal($index)" v-model="supplyForm.items[$index].total" style="width: 160px" class="mr1">
                   </el-input>
                   <el-button @click="deleteItem($index)" type="warning" style="display: inline" size="small" icon="el-icon-delete" plain circle />
                 </template>
@@ -94,6 +113,36 @@
         </el-form-item>
       </el-form>
     </div>
+    <el-dialog
+    title="Импорт поставки"
+    :visible.sync="dialogVisible"
+    width="70%"
+    >
+      <strong>Выберите столбцы, содержание которых импортируете:</strong>
+      <div class="collumns mt1">
+        <div class="collumn" v-for="(v, index) in Object.keys(jsonData)" :key="index">
+          <div class="column-header mb1">
+            <strong>{{selectOptions[`${index}`]}}</strong>
+          </div>
+          <el-table
+          :data="jsonData[`${v}`]"
+          size="small"
+          >
+            <el-table-column
+            :label="v"
+            show-overflow-tooltip>
+              <template slot-scope="{row}">
+                {{row}}
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">Отменить</el-button>
+        <el-button type="primary" @click="confirmData">Продолжить</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -103,7 +152,7 @@ export default {
       const {suppliers, stores, products} = await store.dispatch('supply/findAllDetails')
       return { suppliers, stores, products }
     } catch (e) {
-
+      console.log(e)
     }
   },
   data(){
@@ -135,12 +184,16 @@ export default {
     return{
       loading: false,
       file: null,
+      dialogVisible: false,
+      jsonData: [],
+      select: {},
+      selectOptions: {0: 'Наименование', 1: 'Количество', 2: 'Цена за единицу', 3: 'Цена за продажу'},
       supplyForm: {
         date: new Date(),
         supplier: '',
         store: '',
         comment: '',
-        items: [ { id: '', amount: '', cost: '', total: '' } ]
+        items: [ { id: '', amount: '', cost: '', price: '', total: '' } ]
       },
       rules:{
         date: [
@@ -162,9 +215,84 @@ export default {
   goToBack() {
     this.$router.back()
   },
+  confirmData() {
+    const data = Object.values(this.jsonData).slice(0, 4)
+    if (data.length == 4) {
+      let minLength = data[0].length
+      data.forEach(f => f.length < minLength? minLength = f.length:'' )
+      this.supplyForm.items= []
+      for (let i = 0; i < minLength; i++) {
+        let product = this.products.find(p => p.name == data[0][i])
+        let total = Number(data[1][i] * data[2][i])
+        if (product) {
+          if (total) {
+            this.supplyForm.items.push({ id: product.id, amount: data[1][i], cost: data[2][i], price: data[3][i], total })
+          }
+          else {
+            this.supplyForm.items.push({ id: product.id, amount: '', cost: '', price: data[3][i], total: ''})
+          }
+        }
+        else {
+          this.supplyForm.items.push({ id: '', amount: data[1][i], cost: data[2][i], price: data[3][i], total, conflict: data[0][i]})
+        }
+      }
+      this.dialogVisible = false
+      this.$refs.upload.clearFiles()
+    }
+    else {
+      this.$message.error('File invalid!')
+    }
+  },
+  // file upload
+  handleAvatarChange(file, fileList) {
+    let type = file.raw.type
+    const isExcel = type == 'application/vnd.ms-excel' || type === 'application/excel'
+    if (isExcel) {
+      let self = this
+      const reader = new FileReader()
+      reader.onload = function(event) {
+        const data = event.target.result;
+        const workbook = XLSX.read(data, {
+          type: "binary"
+        });
+        workbook.SheetNames.forEach(sheet => {
+          let rowObject = XLSX.utils.sheet_to_row_object_array(
+            workbook.Sheets[sheet]
+          );
+          if (rowObject) {
+            let resultObj = {}
+            rowObject.forEach(val => {
+              Object.keys(val).forEach(v => {
+                if (resultObj.hasOwnProperty(`${v}`)) {
+                  resultObj[`${v}`].push(val[`${v}`])
+                }
+                else {
+                  resultObj[`${v}`] = [val[`${v}`]]
+                }
+              })
+            })
+            self.jsonData = resultObj
+            self.dialogVisible = true
+          }
+        });
+      };
+      reader.readAsBinaryString(file.raw);
+    }
+    else {
+      fileList = []
+      this.$refs.upload.clearFiles()
+      this.$message.error('файлы толка с расширением xls/xlsx ')
+    }
+  },
+  handleExceed(files, fileList) {
+    this.$message.warning('Вы можете загрузить только один файл')
+  },
+  handleRemove(file, fileList){
+    fileList = []
+  },
   addMore() {
     const body = document.getElementsByTagName('body')[0]
-    this.supplyForm.items.push({ id: '', amount: '', cost: '', total: '' })
+    this.supplyForm.items.push({ id: '', amount: '', cost: '', price: '', total: '' })
     window.scrollTo(0,document.querySelector("#scrollinElement").scrollHeight);
   },
   deleteItem(index) {
@@ -259,5 +387,25 @@ export default {
   }
   #submit-button{
     margin-bottom: 0!important;
+  }
+  .collumns {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow-x: auto
+  }
+  .collumn {
+    padding: 1rem;
+    height: 300px;
+    min-width: 250px;
+    border: 2px dashed #409EFF;
+    border-radius: 5px;
+    margin-right: 1rem;
+    overflow-y: auto
+  }
+  .column-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center
   }
 </style>

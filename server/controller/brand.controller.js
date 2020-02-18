@@ -17,8 +17,7 @@ module.exports.createBrand = async (req, res) => {
 
 module.exports.findAllBrands = async (req, res) => {
   try {
-    const brands = await Brands.findAll({raw: true})
-    res.json(brands)
+    res.json(res.result)
   } catch (e) {
     res.status(500).json(e)
   }

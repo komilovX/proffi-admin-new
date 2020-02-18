@@ -8,6 +8,11 @@ module.exports.createSupply = async (req, res) => {
   try {
     const products = JSON.parse(req.body.products)
     products.forEach(async p => {
+      await Product.update({
+        price: p.price
+      }, {
+        where: {id: +p.id}
+      })
       let remainder = await Remainder.findOne({where: {product_id: +p.id}, raw: true})
       if (!remainder) {
         let product = await Product.findByPk(+p.id)
@@ -38,8 +43,7 @@ module.exports.createSupply = async (req, res) => {
 }
 module.exports.findAllSupply = async (req, res) => {
   try {
-    const supplies = await Supply.findAll({raw: true})
-    res.json(supplies)
+    res.json(res.result)
   } catch (e) {
     res.status(500).json(e)
   }
@@ -86,6 +90,11 @@ module.exports.updateById = async (req, res) => {
     })
     result.forEach(async r => {
       const finder = supply_products.find(f => f.id == r.id)
+      await Product.update({
+        price: r.price
+      }, {
+        where: {id: +r.id}
+      })
       const remainder = await Remainder.findOne({where: {product_id: +r.id}, raw: true})
       if (!finder) {
         if (!remainder) {
@@ -142,9 +151,7 @@ module.exports.deleteSupplyById = async (req, res) => {
 
 module.exports.findAllCalculations = async (req, res) => {
   try {
-    let remainders = await Remainder.findAll({raw: true})
-    remainders = remainders.sort((a, b) => (a.residue - a.limit)-(b.residue - b.limit))
-    res.send(remainders)
+    res.send(res.result)
   } catch (e) {
     res.status(500).json(e)
   }

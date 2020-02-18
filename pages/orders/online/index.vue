@@ -7,6 +7,7 @@
       <el-tab-pane :label="`Новый заказы (${newOrders.length})`">
         <el-table
         :data="newOrders"
+        :header-row-class-name="rowClassName"
         tooltip-effect="light"
         style="width: 100%"
         size="medium"
@@ -60,6 +61,7 @@
         <el-tab-pane :label="`Ожидающий заказы (${processOrders.length})`">
           <el-table
           :data="processOrders"
+          :header-row-class-name="rowClassName"
           tooltip-effect="light"
           style="width: 100%"
           size="medium"
@@ -113,6 +115,7 @@
       <el-tab-pane :label="`Оформлений заказы (${activeOrders.length})`">
         <el-table
           :data="activeOrders"
+          :header-row-class-name="rowClassName"
           tooltip-effect="light"
           style="width: 100%"
           size="medium"
@@ -124,6 +127,7 @@
               tooltip-effect="light"
               :header-row-class-name="rowClassName"
               style="width: 100%"
+              :id="`row-product-${row.id}`"
               >
                 <el-table-column
                 prop="name"
@@ -191,11 +195,11 @@
               align="center"
             >
               <template slot-scope="{row: {id}}">
+                <el-button @click="printMe(id)" type="primary" plain icon="el-icon-printer" size="small"/>
                 <el-button
                 type="primary"
                 size="small"
                 @click="openDialog(id)"
-                class="mr1"
                 >
                 инфо
                 </el-button>
@@ -215,6 +219,7 @@
     title="Xabar jo'natish"
     :visible.sync="dialogVisible"
     width="50%"
+    id="dialog"
     >
       <div class="text item info">
         <div><strong>Имя клиента: </strong>{{currentOrder.name}}</div>
@@ -230,6 +235,7 @@
   </div>
 </template>
 <script>
+import $ from 'jquery'
 export default {
   async asyncData({store, error}) {
     try {
@@ -268,6 +274,40 @@ export default {
       this.currentOrder = order
       this.dialogVisible = true
     },
+    printMe(id) {
+      const order = this.activeOrders.find(f => f.id == id)
+      let table = document.getElementById(`row-product-${id}`)
+      let product = JSON.parse(order.products)
+
+      let html = `
+        <div><strong>Имя клиента: </strong>${order.name}</div>
+        <div><strong>Телефон клиента: </strong>${order.phone}</div>
+        <div><strong>Оплата: </strong>${order.order_type}</div>
+        <div><strong>Система: </strong>${order.system}</div>
+        <div><strong>Адрес клиента: </strong>${order.address}</div>
+        <table>
+          <tr>
+            <th>Товар</th>
+            <th>Кол-во</th>
+            <th>Цена</th>
+          </tr>
+           ${product.map(p =>{
+             return `
+             <tr>
+              <td>${p.name}</td>
+              <td>${p.amount}</td>
+              <td>${p.cost}</td>
+             </tr>
+             `
+           }).join('')}
+        </table>
+      `
+      console.log('html', html)
+      let newWin= window.open("");
+      newWin.document.write(html);
+      newWin.print();
+      newWin.close();
+    },
     async addToDelivered(id) {
       this.$confirm('Вы действительно уверенно что этот заказ доставлен?', 'Warning', {
         confirmButtonText: 'OK',
@@ -286,7 +326,10 @@ export default {
           console.log(e)
         }
       })
-    }
+    },
+    rowClassName({row, rowIndex}) {
+      return 'table-header'
+    },
   },
   computed: {
     ioOrder() {
