@@ -28,7 +28,7 @@
         show-overflow-tooltip
         />
         <el-table-column
-        width="400"
+        min-width="300"
         prop="address"
         label="Адрес"
         header-align="left"
@@ -36,15 +36,8 @@
         show-overflow-tooltip
         />
         <el-table-column
-        min-width="200"
-        label="Себестоимость"
-        align="center"
+        fixed="right"
         >
-          <template slot-scope="{row: {total} }">
-            {{ formatCurrency(total) }}
-          </template>
-        </el-table-column>
-        <el-table-column>
           <template slot-scope="{row:{id,deleted}}" v-if="deleted != 1">
             <div class="red df">
               <nuxt-link :to='`/storage/store/${id}`' tag="a" class="mr1">Ред</nuxt-link>

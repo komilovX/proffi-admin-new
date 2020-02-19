@@ -4,7 +4,7 @@
     <sidebar class="sidebar-container" />
     <div class="main-container">
       <div :class="{'fixed-header':true}">
-        <navbar />
+        <navbar :mValue="mValue" :value="value" @onMessageClick="messageClicked($event)" @onBellClick="onBellClick" />
       </div>
       <div class="app-main">
         <transition name="fade-transform" mode="out-in">
@@ -20,6 +20,12 @@ import { Navbar, Sidebar } from '@/components/LayoutComponents'
 import ResizeMixin from '@/mixins/ResizeHandler'
 
 export default {
+  data() {
+    return {
+      mValue: '',
+      value: ''
+    }
+  },
   components: {
     Navbar,
     Sidebar
@@ -28,6 +34,15 @@ export default {
   methods: {
     handleClickOutside() {
       this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
+    },
+    messageClicked() {
+      if (this.mValue) {
+        this.$router.push('/storage/calculation')
+        this.mValue = ''
+      }
+    },
+    onBellClick() {
+      console.log(this.$route)
     }
   },
   computed: {
@@ -54,8 +69,6 @@ export default {
   },
   watch:{
     error(value) {
-      console.log('value.response.data.message', value.response.data.message);
-      console.log('value.response', value.response);
       this.$message.error(value.response.data.message)
     }
   }
@@ -71,6 +84,26 @@ export default {
 }
 .fixed-header+.app-main {
   padding-top: 50px;
+}
+.container {
+    padding: 8px;
+  }
+.message-card {
+  padding: 8px;
+  height: 100px;
+  overflow-y: auto;
+  border-radius: 5px;
+  border: 2px solid #60db23
+}
+.greyBorder {
+  border: 2px solid #adb6a9
+}
+.message-card .header i {
+  color: #F56C6C;
+  cursor: pointer;
+}
+.message-card .header span {
+  color: #888
 }
 </style>
 <style lang="scss" scoped>

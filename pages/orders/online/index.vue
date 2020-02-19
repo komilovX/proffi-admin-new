@@ -302,7 +302,6 @@ export default {
            }).join('')}
         </table>
       `
-      console.log('html', html)
       let newWin= window.open("");
       newWin.document.write(html);
       newWin.print();

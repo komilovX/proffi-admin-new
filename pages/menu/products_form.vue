@@ -63,8 +63,8 @@ export default {
       if (store.getters['category/categories'].length === 0) {
         await store.dispatch('category/findAllCategories')
       }
-      const brands = await store.dispatch('brands/findAllBrands')
-      return { brands }
+      const {data} = await store.dispatch('brands/findAllBrands', {page:1, limit: 100})
+      return { brands: data }
     } catch (error) {
 
     }

@@ -5,12 +5,12 @@
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu df">
-      <div class="avatar-wrapper">
+      <div class="avatar-wrapper" @click="$emit('onBellClick', true)">
         <el-badge :value="value" class="item">
-          <img src="/bell.svg" class="bell-avatar delay-4s swing" :class="{'animated': value>0}">
+          <img src="/bell.svg" class="bell-avatar">
         </el-badge>
       </div>
-      <div class="avatar-wrapper" @click="goToCalculation">
+      <div class="avatar-wrapper" @click="$emit('onMessageClick', true)">
         <el-badge :value="mValue" class="item">
           <img src="/email.svg" class="bell-avatar">
         </el-badge>
@@ -29,49 +29,24 @@ import Hamburger from './Hamburger'
 export default {
   data() {
     return {
-      value: null,
-      mValue: ''
     }
+  },
+  props: {
+    value: String,
+    mValue: String
   },
   components: {
     Breadcrumb,
     Hamburger
   },
-  sockets: {
-    checkRemainder() {
-      localStorage.setItem('getMessageValue',true)
-      this.mValue = 'new'
-    }
-  },
   computed: {
     sidebar() {
       return this.$store.getters['app/sidebar']
-    },
-    order() {
-      return this.$store.getters['order/orders']
-    },
-    messageValue() {
-      if (localStorage.getItem('getMessageValue')) {
-        this.mValue = 'new'
-      }
-      this.mValue = ''
-    },
-  },
-  watch: {
-    order(val) {
-      this.value = val.length
     },
   },
   methods: {
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
-    },
-    goToCalculation() {
-      if (localStorage.getItem('getMessageValue')) {
-        localStorage.removeItem('getMessageValue')
-        this.mValue = ''
-        this.$router.push('/storage/calculation')
-      }
     },
     logout() {
       this.$confirm('Вы уверены что хотите выйти из система?', 'Warning', {

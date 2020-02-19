@@ -41,7 +41,7 @@
         show-overflow-tooltip
         />
         <el-table-column
-        width="200"
+        width="180"
         prop="comment"
         label="Комментарий"
         align="left"
@@ -51,10 +51,11 @@
         prop="supplies"
         label="Количество поставок"
         header-align="left"
-        align="right"
+        align="center"
         width="150"
         />
         <el-table-column
+        width="180"
         label="Цена"
         align="center"
         >

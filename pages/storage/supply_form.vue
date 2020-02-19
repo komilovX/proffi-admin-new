@@ -245,9 +245,9 @@ export default {
   },
   // file upload
   handleAvatarChange(file, fileList) {
-    let type = file.raw.type
-    const isExcel = type == 'application/vnd.ms-excel' || type === 'application/excel'
-    if (isExcel) {
+    let name = file.raw.name
+    let result = name.substring(name.lastIndexOf('.')+1, name.length)
+    if (result == 'xls' || result == 'xlsx') {
       let self = this
       const reader = new FileReader()
       reader.onload = function(event) {

@@ -23,6 +23,13 @@ const Orders = sequelize.define('orders', {
   },
   system: Sequelize.STRING,
   address: Sequelize.STRING,
+  delivery: {
+    type: Sequelize.FLOAT,
+  },
+  total: {
+    type: Sequelize.FLOAT,
+    defaultValue: 0
+  },
   products: Sequelize.STRING,
   status: {
     type: Sequelize.INTEGER,

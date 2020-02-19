@@ -34,6 +34,16 @@ module.exports.createSupply = async (req, res) => {
         })
       }
     })
+    const total = products.reduce((acc, cur) => acc+Number(cur.total),0)
+    const supplier = await Supplier.findByPk(+req.body.supplier_id)
+    await Supplier.update({
+      supplies: supplier.supplies + 1,
+      total_cost: supplier.total_cost+total
+    },{
+      where: {
+        id: +req.body.supplier_id
+      }
+    })
     await Supply.create(req.body)
     res.json({message: 'created'})
   } catch (e) {
@@ -124,6 +134,16 @@ module.exports.updateById = async (req, res) => {
         })
       }
     })
+    let oldTotal = supply_products.reduce((acc, cur) => acc+Number(cur.total),0)
+    let newTotal = products.reduce((acc, cur) => acc+Number(cur.total),0)
+    if (newTotal != oldTotal) {
+      const supplier = await Supplier.findByPk(+req.body.supplier_id)
+      await Supplier.update({
+        total_cost: supplier.total_cost+Number(newTotal-oldTotal)
+      },{
+        where: {id: +req.body.supplier_id}
+      })
+    }
     await Supply.update(req.body,
     {
       where: {id: req.params.id}
