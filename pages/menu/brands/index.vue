@@ -60,12 +60,13 @@
 <script>
 import AppPagination from '@/components/AppPagination'
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store, error}) {
     try {
       const {data, size} = await store.dispatch('brands/findAllBrands',{page: 1, limit: 30})
       return {brands: data, size}
     } catch (e) {
-      error(e)
+      console.log(e)
     }
   },
   data: () => ({
@@ -109,6 +110,14 @@ export default {
         console.log(error);
       }
     }
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
 }
 </script>

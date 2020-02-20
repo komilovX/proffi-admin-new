@@ -38,6 +38,7 @@
 </template>
 <script>
 export default {
+  middleware: ['admin-auth'],
   data(){
     return{
       loading: false,
@@ -100,7 +101,15 @@ export default {
           return false;
         }
       });
-      },
+    },
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
 }
 

@@ -101,6 +101,7 @@
 <script>
 import AppPagination from '@/components/AppPagination'
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store}) {
     try {
       const {data, size} = await store.dispatch('supply/findAllCalculations',{page: 1, limit: 30})
@@ -163,6 +164,14 @@ export default {
         return v
       })
     }
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
 }
 </script>

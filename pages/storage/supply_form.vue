@@ -2,7 +2,7 @@
   <div id="scrollinElement">
     <div class="header p1 df bb">
       <i class="el-icon-arrow-left mr1" @click="goToBack()"></i>
-      <h2>Редактирование карточки поставщика</h2>
+      <h2>Поставка</h2>
     </div>
     <div class="form p1">
       <el-form :model="supplyForm" status-icon :rules="rules" ref="supplyForm" label-width="200px" class="demo-ruleForm">
@@ -160,6 +160,7 @@ export default {
       let checkIsEmpty = false
       let isNumber = true
       value.forEach(v => {
+        delete v.conflict
         Object.keys(v).forEach((i, index) => {
           if (!v[`${i}`]) {
             checkIsEmpty = true
@@ -212,149 +213,157 @@ export default {
     }
   },
   methods:{
-  goToBack() {
-    this.$router.back()
-  },
-  confirmData() {
-    const data = Object.values(this.jsonData).slice(0, 4)
-    if (data.length == 4) {
-      let minLength = data[0].length
-      data.forEach(f => f.length < minLength? minLength = f.length:'' )
-      this.supplyForm.items= []
-      for (let i = 0; i < minLength; i++) {
-        let product = this.products.find(p => p.name == data[0][i])
-        let total = Number(data[1][i] * data[2][i])
-        if (product) {
-          if (total) {
-            this.supplyForm.items.push({ id: product.id, amount: data[1][i], cost: data[2][i], price: data[3][i], total })
+    goToBack() {
+      this.$router.back()
+    },
+    confirmData() {
+      const data = Object.values(this.jsonData).slice(0, 4)
+      if (data.length == 4) {
+        let minLength = data[0].length
+        data.forEach(f => f.length < minLength? minLength = f.length:'' )
+        this.supplyForm.items= []
+        for (let i = 0; i < minLength; i++) {
+          let product = this.products.find(p => p.name == data[0][i])
+          let total = Number(data[1][i] * data[2][i])
+          if (product) {
+            if (total) {
+              this.supplyForm.items.push({ id: product.id, amount: data[1][i], cost: data[2][i], price: data[3][i], total })
+            }
+            else {
+              this.supplyForm.items.push({ id: product.id, amount: '', cost: '', price: data[3][i], total: ''})
+            }
           }
           else {
-            this.supplyForm.items.push({ id: product.id, amount: '', cost: '', price: data[3][i], total: ''})
+            this.supplyForm.items.push({ id: '', amount: data[1][i], cost: data[2][i], price: data[3][i], total, conflict: data[0][i]})
           }
         }
-        else {
-          this.supplyForm.items.push({ id: '', amount: data[1][i], cost: data[2][i], price: data[3][i], total, conflict: data[0][i]})
-        }
+        this.dialogVisible = false
+        this.$refs.upload.clearFiles()
       }
-      this.dialogVisible = false
-      this.$refs.upload.clearFiles()
-    }
-    else {
-      this.$message.error('File invalid!')
-    }
-  },
-  // file upload
-  handleAvatarChange(file, fileList) {
-    let name = file.raw.name
-    let result = name.substring(name.lastIndexOf('.')+1, name.length)
-    if (result == 'xls' || result == 'xlsx') {
-      let self = this
-      const reader = new FileReader()
-      reader.onload = function(event) {
-        const data = event.target.result;
-        const workbook = XLSX.read(data, {
-          type: "binary"
-        });
-        workbook.SheetNames.forEach(sheet => {
-          let rowObject = XLSX.utils.sheet_to_row_object_array(
-            workbook.Sheets[sheet]
-          );
-          if (rowObject) {
-            let resultObj = {}
-            rowObject.forEach(val => {
-              Object.keys(val).forEach(v => {
-                if (resultObj.hasOwnProperty(`${v}`)) {
-                  resultObj[`${v}`].push(val[`${v}`])
-                }
-                else {
-                  resultObj[`${v}`] = [val[`${v}`]]
-                }
-              })
-            })
-            self.jsonData = resultObj
-            self.dialogVisible = true
-          }
-        });
-      };
-      reader.readAsBinaryString(file.raw);
-    }
-    else {
-      fileList = []
-      this.$refs.upload.clearFiles()
-      this.$message.error('файлы толка с расширением xls/xlsx ')
-    }
-  },
-  handleExceed(files, fileList) {
-    this.$message.warning('Вы можете загрузить только один файл')
-  },
-  handleRemove(file, fileList){
-    fileList = []
-  },
-  addMore() {
-    const body = document.getElementsByTagName('body')[0]
-    this.supplyForm.items.push({ id: '', amount: '', cost: '', price: '', total: '' })
-    window.scrollTo(0,document.querySelector("#scrollinElement").scrollHeight);
-  },
-  deleteItem(index) {
-    this.supplyForm.items.splice(index, 1)
-  },
-  checkValue(index) {
-    const {amount, cost, total} = this.supplyForm.items[index]
-    const isNumber = (parseFloat(amount) && parseFloat(cost))
-    if (isNumber) {
-      this.supplyForm.items[index].total = Number(+amount * cost ).toFixed(2)
-    }
-  },
-  multiplyValue(index) {
-    const {amount, cost, total} = this.supplyForm.items[index]
-    const isNumber = (parseFloat(amount) && parseFloat(cost))
-    if (isNumber) {
-      this.supplyForm.items[index].total = Number(+amount * cost ).toFixed(2)
-    }
-  },
-  checkTotal(index) {
-    const {amount, cost, total} = this.supplyForm.items[index]
-    const isNumber = (parseFloat(amount) && parseFloat(total))
-    if (isNumber) {
-      this.supplyForm.items[index].cost = Number(+total/ amount).toFixed(2)
-    }
-  },
-  submitForm(formName) {
-    this.$refs[formName].validate(async (valid) => {
-      if (valid) {
-        const total = this.supplyForm.items.reduce((acc, cur) => acc + Number(cur.total),0)
-        let supplier_name = this.suppliers.find(f => f.id == +this.supplyForm.supplier)
-        let store_name = this.stores.find(f => f.id == +this.supplyForm.store)
-        let products = []
-        this.supplyForm.items.forEach(p => {
-          let {name} = this.products.find(f => f.id == p.id)
-          products.push({...p,name})
-        })
-        const formData = {
-          date: this.supplyForm.date,
-          supplier_name: supplier_name.name,
-          supplier_id: this.supplyForm.supplier,
-          store_name: store_name.name,
-          store_id: this.supplyForm.store,
-          comment: this.supplyForm.comment,
-          products: JSON.stringify(products),
-          total: parseFloat(total)
-        }
-        this.loading = true
-        try {
-          await this.$store.dispatch('supply/createSupply', formData)
-          this.loading = false
-          this.$message.success('поставка успешна добавлена')
-          this.$router.push('/storage/supply')
-        } catch (e) {
-          this.loading = false
-          console.log(e)
-        }
-      } else {
-        return false;
+      else {
+        this.$message.error('File invalid!')
       }
-    });
     },
+    // file upload
+    handleAvatarChange(file, fileList) {
+      let name = file.raw.name
+      let result = name.substring(name.lastIndexOf('.')+1, name.length)
+      if (result == 'xls' || result == 'xlsx') {
+        let self = this
+        const reader = new FileReader()
+        reader.onload = function(event) {
+          const data = event.target.result;
+          const workbook = XLSX.read(data, {
+            type: "binary"
+          });
+          workbook.SheetNames.forEach(sheet => {
+            let rowObject = XLSX.utils.sheet_to_row_object_array(
+              workbook.Sheets[sheet]
+            );
+            if (rowObject) {
+              let resultObj = {}
+              rowObject.forEach(val => {
+                Object.keys(val).forEach(v => {
+                  if (resultObj.hasOwnProperty(`${v}`)) {
+                    resultObj[`${v}`].push(val[`${v}`])
+                  }
+                  else {
+                    resultObj[`${v}`] = [val[`${v}`]]
+                  }
+                })
+              })
+              self.jsonData = resultObj
+              self.dialogVisible = true
+            }
+          });
+        };
+        reader.readAsBinaryString(file.raw);
+      }
+      else {
+        fileList = []
+        this.$refs.upload.clearFiles()
+        this.$message.error('файлы толка с расширением xls/xlsx ')
+      }
+    },
+    handleExceed(files, fileList) {
+      this.$message.warning('Вы можете загрузить только один файл')
+    },
+    handleRemove(file, fileList){
+      fileList = []
+    },
+    addMore() {
+      const body = document.getElementsByTagName('body')[0]
+      this.supplyForm.items.push({ id: '', amount: '', cost: '', price: '', total: '' })
+      window.scrollTo(0,document.querySelector("#scrollinElement").scrollHeight);
+    },
+    deleteItem(index) {
+      this.supplyForm.items.splice(index, 1)
+    },
+    checkValue(index) {
+      const {amount, cost, total} = this.supplyForm.items[index]
+      const isNumber = (parseFloat(amount) && parseFloat(cost))
+      if (isNumber) {
+        this.supplyForm.items[index].total = Number(+amount * cost ).toFixed(2)
+      }
+    },
+    multiplyValue(index) {
+      const {amount, cost, total} = this.supplyForm.items[index]
+      const isNumber = (parseFloat(amount) && parseFloat(cost))
+      if (isNumber) {
+        this.supplyForm.items[index].total = Number(+amount * cost ).toFixed(2)
+      }
+    },
+    checkTotal(index) {
+      const {amount, cost, total} = this.supplyForm.items[index]
+      const isNumber = (parseFloat(amount) && parseFloat(total))
+      if (isNumber) {
+        this.supplyForm.items[index].cost = Number(+total/ amount).toFixed(2)
+      }
+    },
+    submitForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          const total = this.supplyForm.items.reduce((acc, cur) => acc + Number(cur.total),0)
+          let supplier_name = this.suppliers.find(f => f.id == +this.supplyForm.supplier)
+          let store_name = this.stores.find(f => f.id == +this.supplyForm.store)
+          let products = []
+          this.supplyForm.items.forEach(p => {
+            let {name} = this.products.find(f => f.id == p.id)
+            products.push({...p,name})
+          })
+          const formData = {
+            date: this.supplyForm.date,
+            supplier_name: supplier_name.name,
+            supplier_id: this.supplyForm.supplier,
+            store_name: store_name.name,
+            store_id: this.supplyForm.store,
+            comment: this.supplyForm.comment,
+            products: JSON.stringify(products),
+            total: parseFloat(total)
+          }
+          this.loading = true
+          try {
+            await this.$store.dispatch('supply/createSupply', formData)
+            this.loading = false
+            this.$message.success('поставка успешна добавлена')
+            this.$router.push('/storage/supply')
+          } catch (e) {
+            this.loading = false
+            console.log(e)
+          }
+        } else {
+          return false;
+        }
+      });
+    },
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
 }
 </script>

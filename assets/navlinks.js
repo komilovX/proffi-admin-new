@@ -41,6 +41,16 @@ export const routes =[
   {name:'Отправка сообщение',path:'/send_message', icon: 'el-icon-s-promotion',  origin:'/send_message'},
   {name:'Доставление заказы',path:'/delivered',origin:'/delivered'},
   {name:'Отмененные заказы',path:'/canceled',origin:'/canceled'},
+  //
+  {name:'Новый бренд',path:'/brands_form'},
+  {name:'Новая категория',path:'/categories_form'},
+  {name:'Новый товар',path:'/products_form'},
+  {name:'Новый товар',path:'/products_form'},
+  {name:'Редактирование склада',path:'/store_form'},
+  {name:'Добавление',path:'/suppliers_form'},
+  {name:'Добавление',path:'/access_form'},
+  {name:'Поставка',path:'/supply_form'},
+  {name:'Добавление сообщения',path:'/message_form'},
 ]
 
 export const sortlinks = [

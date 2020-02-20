@@ -67,12 +67,13 @@
 </style>
 <script>
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store}) {
     try {
       const stores = await store.dispatch('store/findAllStores')
       return {stores}
-    } catch (error) {
-
+    } catch (e) {
+      console.log(e)
     }
   },
   data: () => ({
@@ -104,7 +105,15 @@ export default {
     formatCurrency(cost) {
       return new Intl.NumberFormat('ru').format(cost)
     },
-  }
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
+  },
 }
 </script>
 <style>

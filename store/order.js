@@ -19,17 +19,17 @@ export const actions = {
       throw e
     }
   },
-  async getAllCanceledOrders({commit}) {
+  async getAllCanceledOrders({commit}, {page, limit}) {
     try {
-      return this.$axios.$get('api/orders/canceled')
+      return this.$axios.$get(`api/orders/canceled?page=${page}&limit=${limit}`)
     } catch (e) {
       commit('setError', e, {root: true})
       throw e
     }
   },
-  async getAllDeliveredOrders({commit}) {
+  async getAllDeliveredOrders({commit}, {page, limit}) {
     try {
-      return this.$axios.$get('api/orders/delivered')
+      return this.$axios.$get(`api/orders/delivered?page=${page}&limit=${limit}`)
     } catch (e) {
       commit('setError', e, {root: true})
       throw e
@@ -38,6 +38,14 @@ export const actions = {
   async changeStatus({commit}, {id, status}) {
     try {
       return this.$axios.$put(`api/orders/${id}`,{status})
+    } catch (e) {
+      commit('setError', e, {root: true})
+      throw e
+    }
+  },
+  async acceptOrder({commit}, {id, status, total, products}) {
+    try {
+      return this.$axios.$put(`api/orders/accept/${id}`,{status, total, products})
     } catch (e) {
       commit('setError', e, {root: true})
       throw e
@@ -53,12 +61,8 @@ export const actions = {
   SOCKET_newOrder({commit}, orders) {
     commit('setOrder', orders)
   },
-  SOCKET_checkRemainder({commit}, data) {
-    console.log('SOCKET_checkRemainder', data);
-  },
 }
 
 export const getters = {
-  orders: state => state.orders,
-  ordersLength: state => 2
+  orders: state => state.orders
 }

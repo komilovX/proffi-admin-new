@@ -1,7 +1,8 @@
 <template>
   <div>
     <div class="header p1 df bb">
-      <h2>Отправка сообщение</h2>
+      <i class="el-icon-arrow-left mr1" @click="$router.back()"></i>
+      <h2>Добавление сообщения</h2>
     </div>
     <div class="form p1">
       <el-form :model="sendMessageForm" status-icon :rules="rules" ref="sendMessage" label-width="200px" label-position="top">

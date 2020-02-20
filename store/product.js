@@ -8,9 +8,6 @@ export const actions = {
       fd.append('brand', form.brand)
       fd.append('brand_id', form.brand_id)
       fd.append('image', form.image, form.image.name)
-      fd.append('cost_netto', form.cost_netto)
-      fd.append('cost', form.cost)
-      fd.append('percent', form.percent)
       fd.append('comment', form.comment)
       return await this.$axios.$post('api/menu/product', fd)
     } catch (error) {
@@ -42,18 +39,12 @@ export const actions = {
         fd.append('category_id', form.category_id)
         fd.append('category_name', form.category_name)
         fd.append('image', form.image, form.image.name)
-        fd.append('cost_netto', form.cost_netto)
-        fd.append('cost', form.cost)
-        fd.append('percent', form.percent)
         fd.append('comment', form.comment)
       }
       else {
         fd.append('name', form.name)
         fd.append('category_id', form.category_id)
         fd.append('category_name', form.category_name)
-        fd.append('cost_netto', form.cost_netto)
-        fd.append('cost', form.cost)
-        fd.append('percent', form.percent)
         fd.append('comment', form.comment)
       }
       return await this.$axios.$put(`api/menu/product/${form.id}`, fd)

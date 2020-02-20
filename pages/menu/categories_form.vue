@@ -45,13 +45,14 @@
 <script>
 import categoryList from '@/mixins/categoryList';
 export default {
+  middleware: ['admin-auth'],
   async fetch({store}) {
     try {
       if (store.getters['category/categories'].length == 0) {
         await store.dispatch('category/findAllCategories')
       }
-    } catch (error) {
-
+    } catch (e) {
+      console.log(e)
     }
   },
   data(){
@@ -120,7 +121,15 @@ export default {
           return false;
         }
       });
-      },
+    },
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
 }
 

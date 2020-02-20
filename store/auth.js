@@ -12,7 +12,6 @@ export const mutations = {
     this.$axios.setToken(token,'Bearer')
     Cookies.set('jwt-token',token)
     state.token = token
-    console.log('token', state.token)
   },
   clearToken(state) {
     this.$axios.setToken(false)
@@ -21,7 +20,6 @@ export const mutations = {
   },
   setUserRole(state, role) {
     state.role = role
-    console.log('role', state.role)
   }
 }
 

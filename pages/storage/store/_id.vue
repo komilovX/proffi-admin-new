@@ -29,12 +29,13 @@
 </template>
 <script>
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store, route}) {
     try {
       const storage = await store.dispatch('store/findStoreById', route.params.id)
       return {storage}
-    } catch (error) {
-
+    } catch (e) {
+      console.log(e)
     }
   },
   data(){
@@ -60,32 +61,40 @@ export default {
     this.suuplierForm.address = this.storage.address
   },
   methods:{
-  goToBack() {
-    this.$router.back()
-  },
-  submitForm(formName) {
-    this.$refs[formName].validate(async (valid) => {
-      if (valid) {
-        const formData = {
-          id: this.$route.params.id,
-          name: this.suuplierForm.name,
-          address: this.suuplierForm.address,
-        }
-        this.loading = true
-
-        try {
-          await this.$store.dispatch('store/updateStoreById', formData)
-          this.loading = false
-          this.$router.push('/storage/store')
-        } catch (error) {
-          this.loading = false
-          console.log(error)
-        }
-      } else {
-        return false;
-      }
-    });
+    goToBack() {
+      this.$router.back()
     },
+    submitForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          const formData = {
+            id: this.$route.params.id,
+            name: this.suuplierForm.name,
+            address: this.suuplierForm.address,
+          }
+          this.loading = true
+
+          try {
+            await this.$store.dispatch('store/updateStoreById', formData)
+            this.loading = false
+            this.$router.push('/storage/store')
+          } catch (error) {
+            this.loading = false
+            console.log(error)
+          }
+        } else {
+          return false;
+        }
+      });
+    },
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
 }
 </script>

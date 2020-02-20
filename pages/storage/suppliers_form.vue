@@ -2,7 +2,7 @@
   <div>
     <div class="header p1 df bb">
       <i class="el-icon-arrow-left mr1" @click="goToBack()"></i>
-      <h2>Редактирование карточки поставщика</h2>
+      <h2>Добавление карточки поставщика</h2>
     </div>
     <div class="form p1">
       <el-form :model="suuplierForm" status-icon :rules="rules" ref="suppliersForm" label-width="120px" class="demo-ruleForm">
@@ -41,6 +41,7 @@
 </template>
 <script>
 export default {
+  middleware: ['admin-auth'],
   data(){
     return{
       loading: false,
@@ -66,34 +67,42 @@ export default {
     }
   },
   methods:{
-  goToBack() {
-    this.$router.back()
-  },
-  submitForm(formName) {
-    this.$refs[formName].validate(async (valid) => {
-      if (valid) {
-        const formData = {
-          name: this.suuplierForm.name,
-          phone: this.suuplierForm.phone,
-          address: this.suuplierForm.address,
-          comment: this.suuplierForm.comment
-        }
-        this.loading = true
-
-        try {
-          await this.$store.dispatch('supplier/createSupplier', formData)
-          this.loading = false
-          this.$message.success('поставщик успешна добавлена')
-          this.$router.push('/storage/suppliers')
-        } catch (e) {
-          this.loading = false
-          console.log(e)
-        }
-      } else {
-        return false;
-      }
-    });
+    goToBack() {
+      this.$router.back()
     },
+    submitForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          const formData = {
+            name: this.suuplierForm.name,
+            phone: this.suuplierForm.phone,
+            address: this.suuplierForm.address,
+            comment: this.suuplierForm.comment
+          }
+          this.loading = true
+
+          try {
+            await this.$store.dispatch('supplier/createSupplier', formData)
+            this.loading = false
+            this.$message.success('поставщик успешна добавлена')
+            this.$router.push('/storage/suppliers')
+          } catch (e) {
+            this.loading = false
+            console.log(e)
+          }
+        } else {
+          return false;
+        }
+      });
+    },
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
 }
 </script>

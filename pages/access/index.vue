@@ -39,7 +39,7 @@
             <div class="red df">
               <nuxt-link :to='`/access/${id}`' tag="a" class="mr1">Ред</nuxt-link>
               <el-dropdown
-              v-if="role != 'creator'"
+              v-if="role != 1"
               trigger="click"
               @command="handleCommand"
               >
@@ -61,25 +61,26 @@
 
 <script>
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store, error}) {
     try {
       const admins = await store.dispatch('auth/findAll')
       return {admins}
     } catch (e) {
-      error(e)
+      console.log(e)
     }
   },
   data: () => ({
     adminList: null
   }),
-  // validate({store, error}) {
-  //   const role = store.getters['auth/userRole']
-  //   if (role == 'creator') {
-  //     return true
-  //   }
-  //   store.commit('setAuthError', true)
-  //   return false
-  // },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role == 1) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
+  },
   mounted() {
     this.getAdminList()
   },
@@ -105,10 +106,10 @@ export default {
     },
     getAdminList() {
       const roles = [
-        {role: 'creator', label: 'владелец', type: 'danger'},
-        {role: 'admin', label: 'управляющий', type: 'success'},
-        {role: 'seller', label: 'продавец', type: 'primary'},
-        {role: 'stockman', label: 'кладовщик', type: 'info'},
+        {role: 1, label: 'владелец', type: 'danger'},
+        {role: 2, label: 'управляющий', type: 'success'},
+        {role: 3, label: 'продавец', type: 'primary'},
+        {role: 4, label: 'кладовщик', type: 'info'},
       ]
       this.adminList = this.admins.map(v => {
         const {label, type} = roles.find(f => f.role == v.role)

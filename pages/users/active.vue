@@ -68,7 +68,6 @@ export default {
   async asyncData({store}) {
     try {
       const {data, size} = await store.dispatch('users/findAllActiveUsers',{page: 1, limit: 30})
-      console.log('data', data)
       return { users: data, size }
     } catch (e) {
       console.log(e)

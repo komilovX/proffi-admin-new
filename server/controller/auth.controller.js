@@ -38,7 +38,7 @@ module.exports.loginSystem = async (req, res) => {
           login: condidate.login,
           userId: condidate.id,
           role: condidate.role
-        },keys.JWT, {expiresIn: 60 * 60 * 2})
+        },keys.JWT, {expiresIn: 2 * 60 * 60})
         res.json(token)
       }
       else{

@@ -41,13 +41,14 @@
 </template>
 <script>
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store, route}) {
     try {
       const supplier = await store.dispatch('supplier/findSupplierById', route.params.id)
 
       return {supplier}
-    } catch (error) {
-
+    } catch (e) {
+      console.log(e)
     }
   },
   data(){
@@ -78,42 +79,50 @@ export default {
     this.suuplierForm.address = this.supplier.address
   },
   methods:{
-  goToBack() {
-    this.$router.back()
-  },
-  submitForm(formName) {
-    this.$refs[formName].validate(async (valid) => {
-      if (valid) {
-        const formData = {
-          id: this.$route.params.id,
-          name: this.suuplierForm.name,
-          phone: this.suuplierForm.phone,
-          address: this.suuplierForm.address,
-          comment: this.suuplierForm.comment
-        }
-        this.loading = true
-
-        try {
-          await this.$store.dispatch('supplier/updateSupplierById', formData)
-          this.loading = false
-          this.$message.success('поставщик успешна обнавлена')
-          this.$router.push('/storage/suppliers')
-        } catch (e) {
-          this.loading = false
-          console.log(e)
-        }
-
-        this.suuplierForm.name = ''
-        this.suuplierForm.phone = ''
-        this.suuplierForm.address = ''
-        this.suuplierForm.comment = ''
-
-        this.loading = false
-      } else {
-        return false;
-      }
-    });
+    goToBack() {
+      this.$router.back()
     },
+    submitForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          const formData = {
+            id: this.$route.params.id,
+            name: this.suuplierForm.name,
+            phone: this.suuplierForm.phone,
+            address: this.suuplierForm.address,
+            comment: this.suuplierForm.comment
+          }
+          this.loading = true
+
+          try {
+            await this.$store.dispatch('supplier/updateSupplierById', formData)
+            this.loading = false
+            this.$message.success('поставщик успешна обнавлена')
+            this.$router.push('/storage/suppliers')
+          } catch (e) {
+            this.loading = false
+            console.log(e)
+          }
+
+          this.suuplierForm.name = ''
+          this.suuplierForm.phone = ''
+          this.suuplierForm.address = ''
+          this.suuplierForm.comment = ''
+
+          this.loading = false
+        } else {
+          return false;
+        }
+      });
+    },
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
 }
 </script>

@@ -63,12 +63,13 @@
 </template>
 <script>
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store, error, route}) {
     try {
       const message = await store.dispatch('send_message/findById', route.params.id)
       return {message}
     } catch (e) {
-      error(e)
+      console.log(e)
     }
   },
   data(){
@@ -135,12 +136,17 @@ export default {
       });
     },
   },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role == 1 || role == 2) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
+  },
 }
 </script>
 <style lang="scss" scoped>
-  // .form {
-  //   text-align: center;
-  // }
   .header i{
     font-weight: 800;
     font-size: 20px;

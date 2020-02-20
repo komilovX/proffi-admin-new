@@ -29,6 +29,7 @@
 </template>
 <script>
 export default {
+  middleware: ['admin-auth'],
   data(){
     return{
       loading: false,
@@ -48,36 +49,44 @@ export default {
     }
   },
   methods:{
-  goToBack() {
-    this.$router.back()
-  },
-  submitForm(formName) {
-    this.$refs[formName].validate(async (valid) => {
-      if (valid) {
-        const formData = {
-          name: this.storeForm.name,
-          address: this.storeForm.address,
-        }
-        this.loading = true
-        try {
-          await this.$store.dispatch('store/createStore', formData)
-          this.loading = false
-          this.$message.success('склад успешна добавлена')
-          this.$router.push('/storage/store')
-        } catch (error) {
-          this.loading = false
-          console.log(error)
-        }
-
-        this.suuplierForm.name = ''
-        this.suuplierForm.address = ''
-
-        this.loading = false
-      } else {
-        return false;
-      }
-    });
+    goToBack() {
+      this.$router.back()
     },
+    submitForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          const formData = {
+            name: this.storeForm.name,
+            address: this.storeForm.address,
+          }
+          this.loading = true
+          try {
+            await this.$store.dispatch('store/createStore', formData)
+            this.loading = false
+            this.$message.success('склад успешна добавлена')
+            this.$router.push('/storage/store')
+          } catch (error) {
+            this.loading = false
+            console.log(error)
+          }
+
+          this.suuplierForm.name = ''
+          this.suuplierForm.address = ''
+
+          this.loading = false
+        } else {
+          return false;
+        }
+      });
+    },
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
 }
 </script>

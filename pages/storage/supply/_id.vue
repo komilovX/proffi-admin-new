@@ -104,12 +104,14 @@
 </template>
 <script>
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store, route, error, redirect}) {
     try {
       const {suppliers, stores, products, supply} = await store.dispatch('supply/findSupplyById', route.params.id)
       return { suppliers, stores, products, supply }
     } catch (e) {
       error({ statusCode: 404, message: '404 - not found' })
+      console.log(e)
     }
   },
   data(){
@@ -165,12 +167,6 @@ export default {
       }
     }
   },
-  validate({route}) {
-    if (Number(route.params.id)) {
-      return true
-    }
-    return false
-  },
   mounted() {
     this.supplyForm.date = this.supply.date
     this.supplyForm.supplier = this.supply.supplier_id
@@ -179,87 +175,95 @@ export default {
     this.supplyForm.items = JSON.parse(this.supply.products)
   },
   methods:{
-  goToBack() {
-    this.$router.back()
-  },
-  addMore() {
-    const body = document.getElementsByTagName('body')[0]
-    this.supplyForm.items.push({ id: '', amount: '', cost: '', total: '' })
-    window.scrollTo(0,document.querySelector("#scrollinElement").scrollHeight);
-  },
-  deleteItem(index) {
-    if (this.supplyForm.items.length == 1) {
-      return this.$message.warning("Вы можете удалить полную поставку")
-    }
-    else if(!this.supplyForm.items[index].id) {
-      return this.supplyForm.items.splice(index, 1)
-    }
-    this.$confirm("Уверены, что хотите удалить этот продукт из поставки?", 'Подтверждение',{
-      confirmButtonText: 'Да',
-      cancelButtonText: 'Отменить',
-      type: 'warning'
-    }).then(() => {
-      this.supplyForm.items.splice(index, 1)
-      this.$message.success('Поставка удалена')
-    }).catch(() => {})
-  },
-  checkValue(index) {
-    const {amount, cost, total} = this.supplyForm.items[index]
-    const isNumber = (parseFloat(amount) && parseFloat(cost))
-    if (isNumber) {
-      this.supplyForm.items[index].total = Number(+amount * cost ).toFixed(2)
-    }
-  },
-  multiplyValue(index) {
-    const {amount, cost, total} = this.supplyForm.items[index]
-    const isNumber = (parseFloat(amount) && parseFloat(cost))
-    if (isNumber) {
-      this.supplyForm.items[index].total = Number(+amount * cost ).toFixed(2)
-    }
-  },
-  checkTotal(index) {
-    const {amount, cost, total} = this.supplyForm.items[index]
-    const isNumber = (parseFloat(amount) && parseFloat(total))
-    if (isNumber) {
-      this.supplyForm.items[index].cost = Number(+total/ amount).toFixed(2)
-    }
-  },
-  submitForm(formName) {
-    this.$refs[formName].validate(async (valid) => {
-      if (valid) {
-        const total = this.supplyForm.items.reduce((acc, cur) => acc + Number(cur.total),0)
-        let supplier_name = this.suppliers.find(f => f.id == +this.supplyForm.supplier)
-        let store_name = this.stores.find(f => f.id == +this.supplyForm.store)
-        let products = []
-        this.supplyForm.items.forEach(p => {
-          let {name} = this.products.find(f => f.id == p.id)
-          products.push({...p, name})
-        })
-        const formData = {
-          date: this.supplyForm.date,
-          supplier_name: supplier_name.name,
-          supplier_id: this.supplyForm.supplier,
-          store_name: store_name.name,
-          store_id: this.supplyForm.store,
-          comment: this.supplyForm.comment,
-          products: JSON.stringify(products),
-          total: parseFloat(total)
-        }
-        this.loading = true
-        try {
-          await this.$store.dispatch('supply/updateSupplyById', {id: this.$route.params.id, formData})
-          this.loading = false
-          this.$message.success('поставка успешна обнавлена')
-          this.$router.push('/storage/supply')
-        } catch (e) {
-          this.loading = false
-          console.log(e)
-        }
-      } else {
-        return false;
-      }
-    });
+    goToBack() {
+      this.$router.back()
     },
+    addMore() {
+      const body = document.getElementsByTagName('body')[0]
+      this.supplyForm.items.push({ id: '', amount: '', cost: '', total: '' })
+      window.scrollTo(0,document.querySelector("#scrollinElement").scrollHeight);
+    },
+    deleteItem(index) {
+      if (this.supplyForm.items.length == 1) {
+        return this.$message.warning("Вы можете удалить полную поставку")
+      }
+      else if(!this.supplyForm.items[index].id) {
+        return this.supplyForm.items.splice(index, 1)
+      }
+      this.$confirm("Уверены, что хотите удалить этот продукт из поставки?", 'Подтверждение',{
+        confirmButtonText: 'Да',
+        cancelButtonText: 'Отменить',
+        type: 'warning'
+      }).then(() => {
+        this.supplyForm.items.splice(index, 1)
+        this.$message.success('Поставка удалена')
+      }).catch(() => {})
+    },
+    checkValue(index) {
+      const {amount, cost, total} = this.supplyForm.items[index]
+      const isNumber = (parseFloat(amount) && parseFloat(cost))
+      if (isNumber) {
+        this.supplyForm.items[index].total = Number(+amount * cost ).toFixed(2)
+      }
+    },
+    multiplyValue(index) {
+      const {amount, cost, total} = this.supplyForm.items[index]
+      const isNumber = (parseFloat(amount) && parseFloat(cost))
+      if (isNumber) {
+        this.supplyForm.items[index].total = Number(+amount * cost ).toFixed(2)
+      }
+    },
+    checkTotal(index) {
+      const {amount, cost, total} = this.supplyForm.items[index]
+      const isNumber = (parseFloat(amount) && parseFloat(total))
+      if (isNumber) {
+        this.supplyForm.items[index].cost = Number(+total/ amount).toFixed(2)
+      }
+    },
+    submitForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          const total = this.supplyForm.items.reduce((acc, cur) => acc + Number(cur.total),0)
+          let supplier_name = this.suppliers.find(f => f.id == +this.supplyForm.supplier)
+          let store_name = this.stores.find(f => f.id == +this.supplyForm.store)
+          let products = []
+          this.supplyForm.items.forEach(p => {
+            let {name} = this.products.find(f => f.id == p.id)
+            products.push({...p, name})
+          })
+          const formData = {
+            date: this.supplyForm.date,
+            supplier_name: supplier_name.name,
+            supplier_id: this.supplyForm.supplier,
+            store_name: store_name.name,
+            store_id: this.supplyForm.store,
+            comment: this.supplyForm.comment,
+            products: JSON.stringify(products),
+            total: parseFloat(total)
+          }
+          this.loading = true
+          try {
+            await this.$store.dispatch('supply/updateSupplyById', {id: this.$route.params.id, formData})
+            this.loading = false
+            this.$message.success('поставка успешна обнавлена')
+            this.$router.push('/storage/supply')
+          } catch (e) {
+            this.loading = false
+            console.log(e)
+          }
+        } else {
+          return false;
+        }
+      });
+    },
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
 }
 </script>

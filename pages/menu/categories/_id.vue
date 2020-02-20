@@ -42,13 +42,18 @@
 <script>
 import categoryList from '@/mixins/categoryList';
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store, route}) {
-    if (store.getters['category/categories'].length == 0) {
-      await store.dispatch('category/findAllCategories')
+    try {
+      if (store.getters['category/categories'].length == 0) {
+        await store.dispatch('category/findAllCategories')
+      }
+      const categories = store.getters['category/categories']
+      const category = categories.find(f => f.id == route.params.id)
+      return {categories, category}
+    } catch (e) {
+      console.log(e)
     }
-    const categories = store.getters['category/categories']
-    const category = categories.find(f => f.id == route.params.id)
-    return {categories, category}
   },
   data(){
     return{
@@ -68,7 +73,6 @@ export default {
     }
   },
   mounted() {
-    console.log('matched', this.$route)
     this.categoryForm.name = this.category.name
     this.categoryForm.category = this.category.parent_category
   },
@@ -119,6 +123,14 @@ export default {
         }
       });
     },
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
 }
 </script>

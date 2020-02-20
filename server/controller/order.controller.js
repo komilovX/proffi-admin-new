@@ -19,16 +19,14 @@ module.exports.findById = async (req, res) => {
 }
 module.exports.getAllCanceledOrders = async (req, res) => {
   try {
-    const orders = await Orders.findAll({where: {status: -1}, raw: true})
-    res.json(orders)
+    res.json(res.result)
   } catch (e) {
     res.status(500).json(e)
   }
 }
 module.exports.getAllDeliveredOrders = async (req, res) => {
   try {
-    const orders = await Orders.findAll({where: {status: 4}, raw: true})
-    res.json(orders)
+    res.json(res.result)
   } catch (e) {
     res.status(500).json(e)
   }
@@ -38,6 +36,18 @@ module.exports.changeStatus = async (req, res) => {
   try {
     await Orders.update({
       status: +req.body.status
+    },{where: {id: +req.params.id} })
+    res.json({messages: 'changed!'})
+  } catch (e) {
+    res.status(500).json(e)
+  }
+}
+module.exports.acceptOrder = async (req, res) => {
+  try {
+    await Orders.update({
+      status: +req.body.status,
+      total: req.body.total,
+      products: req.body.products
     },{where: {id: +req.params.id} })
     res.json({messages: 'changed!'})
   } catch (e) {

@@ -34,12 +34,13 @@
 </template>
 <script>
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store, route, error}) {
     try {
       const admin = await store.dispatch('auth/findById', route.params.id)
       return {admin}
     } catch (e) {
-      error(e)
+      console.log(e)
     }
   },
   data(){
@@ -71,9 +72,10 @@ export default {
   },
   validate({store}) {
   const role = store.getters['auth/userRole']
-    if (role == 'creator') {
+    if (role == 1) {
       return true
     }
+    store.dispatch('setAuthError', true)
     return false
   },
   mounted() {
@@ -114,10 +116,10 @@ export default {
   computed: {
     selectLabel() {
       const roles = [
-        {role: 'creator', label: 'владелец'},
-        {role: 'admin', label: 'управляющий'},
-        {role: 'seller', label: 'продавец'},
-        {role: 'stockman', label: 'кладовщик'},
+        {role: 1, label: 'владелец'},
+        {role: 2, label: 'управляющий'},
+        {role: 3, label: 'продавец'},
+        {role: 4, label: 'кладовщик'},
       ]
       return roles.find(f => f.role == this.admin.role).label
     }

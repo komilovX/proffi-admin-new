@@ -31,13 +31,14 @@
 </template>
 <script>
 export default {
+  middleware: ['admin-auth'],
   data(){
     return{
       loading: false,
       roles: [
-        {role: 'admin', label: 'управляющий'},
-        {role: 'seller', label: 'продавец'},
-        {role: 'stockman', label: 'кладовщик'},
+        {role: 2, label: 'управляющий'},
+        {role: 3, label: 'продавец'},
+        {role: 4, label: 'кладовщик'},
       ],
       employerForm: {
         name: '',
@@ -64,7 +65,7 @@ export default {
   },
   validate({store, error}) {
     const role = store.getters['auth/userRole']
-    if (role == 'creator') {
+    if (role == 1) {
       return true
     }
     store.commit('setAuthError', true)

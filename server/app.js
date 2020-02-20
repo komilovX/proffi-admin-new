@@ -10,6 +10,7 @@ const supplierRoutes = require('./routes/storage.routes');
 const sendMessageRoutes = require('./routes/send_message.routes');
 const orderRoutes = require('./routes/order.routes');
 const userRoutes = require('./routes/user.routes');
+const statisticRoutes = require('./routes/statistic.routes');
 
 const sequelize = require('./database');
 sequelize.sync()
@@ -32,6 +33,7 @@ app.use('/api/storage', supplierRoutes)
 app.use('/api/send_message', sendMessageRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/users', userRoutes)
+app.use('/api/statistics', statisticRoutes)
 
 
 

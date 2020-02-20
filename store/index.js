@@ -18,6 +18,9 @@ export const actions = {
   nuxtClientInit({dispatch}){
     dispatch('auth/autoLogin')
   },
+  setAuthError({commit}, data) {
+    commit('setAuthError', data)
+  }
 }
 
 export const getters = {

@@ -10,7 +10,7 @@ const option = {
 
 module.exports = new Strategy(option, async (payload, done) => {
   try {
-    const condidate = await Admins.findBypk(+payload.userId)
+    const condidate = await Admins.findByPk(+payload.userId)
     if (condidate) {
       done(null, condidate)
     }

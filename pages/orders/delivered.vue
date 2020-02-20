@@ -4,6 +4,7 @@
       <h2>Доставление заказы</h2>
     </div>
         <el-table
+          v-loading="loading2"
           :data="orders"
           tooltip-effect="light"
           style="width: 100%"
@@ -35,16 +36,16 @@
                 align="center"
                 width="250"
                 >
-                  <template slot-scope="{row: {cost}}">
-                    {{ formatCurrency(cost) }}
+                  <template slot-scope="{row: {price}}">
+                    {{ formatCurrency(price) }}
                   </template>
                 </el-table-column>
                 <el-table-column
                 label="Общая сумма"
                 align="right"
                 >
-                  <template slot-scope="{row: {cost, amount}}">
-                    {{ formatCurrency(cost*amount) }}
+                  <template slot-scope="{row: {price, amount}}">
+                    {{ formatCurrency(price*amount) }}
                   </template>
                 </el-table-column>
               </el-table>
@@ -94,9 +95,10 @@
             </el-button>
           </template>
         </el-table-column>
-        </el-table>
+      </el-table>
+      <app-pagination :size="size" @paginationChange="currentChange($event)" v-if="size > 50" />
     <el-dialog
-    title="Xabar jo'natish"
+    title="Инфо"
     :visible.sync="dialogVisible"
     width="50%"
     >
@@ -114,21 +116,37 @@
   </div>
 </template>
 <script>
+import AppPagination from '@/components/AppPagination'
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store, error}) {
     try {
-      const orders = await store.dispatch('order/getAllDeliveredOrders')
-      return {orders}
+      const {data, size} = await store.dispatch('order/getAllDeliveredOrders',{page: 1, limit: 50})
+      return {orders: data, size}
     } catch (e) {
-      error(e)
+      console.log(e)
     }
   },
   data: () => ({
     loading: false,
+    loading2: false,
     dialogVisible: false,
     currentOrder: {},
   }),
+  components: {AppPagination},
   methods: {
+    async currentChange(val) {
+      try {
+        this.loading2 = true
+        const {data, size} = await this.$store.dispatch('order/getAllDeliveredOrders',{page: val, limit: 50})
+        this.orders = data
+        this.size = size
+        this.loading = false
+      } catch (e) {
+        this.loading = false
+        console.log(e)
+      }
+    },
     formatCurrency(cost) {
       return new Intl.NumberFormat('ru').format(cost)
     },
@@ -145,8 +163,19 @@ export default {
       const order = this.orders.find(f => f.id == id)
       this.currentOrder = order
       this.dialogVisible = true
+    },
+    rowClassName({row, rowIndex}) {
+      return 'table-header'
+    },
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 4) {
+      return true
     }
-  }
+    store.dispatch('setAuthError', true)
+    return false
+  },
 }
 </script>
 <style scoped lang="scss">

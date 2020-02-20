@@ -77,12 +77,13 @@
 <script>
 
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store, error}) {
     try {
       const messages = await store.dispatch('send_message/getAllMessages')
       return {messages}
     } catch (e) {
-      error(e)
+      console.log(e)
     }
   },
   data(){
@@ -123,6 +124,14 @@ export default {
       return 'table-header'
     },
   },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+      if (role == 1 || role == 2) {
+        return true
+      }
+      store.dispatch('setAuthError', true)
+      return false
+    },
 }
 </script>
 <style lang="scss" scoped>

@@ -31,6 +31,20 @@ export default {
     Sidebar
   },
   mixins: [ResizeMixin],
+  sockets: {
+    newOrder(data) {
+      const path = this.$route.path
+      if (path != '/orders/online') {
+        this.value = 'new'
+      }
+      let audio = new Audio('/order.mp3')
+      audio.play()
+      this.$message.success('Новый заказ')
+    },
+    checkRemainder() {
+      this.mValue = '1'
+    }
+  },
   methods: {
     handleClickOutside() {
       this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
@@ -42,7 +56,10 @@ export default {
       }
     },
     onBellClick() {
-      console.log(this.$route)
+      if (this.value) {
+        this.$router.push('/orders/online')
+        this.value = ''
+      }
     }
   },
   computed: {
@@ -69,7 +86,9 @@ export default {
   },
   watch:{
     error(value) {
-      this.$message.error(value.response.data.message)
+      if (value.response.data.message) {
+       this.$message.error(value.response.data.message)
+      }
     }
   }
 }

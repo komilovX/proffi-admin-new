@@ -36,9 +36,14 @@
 <script>
 import categoryList from '@/mixins/categoryList';
 export default {
+  middleware: ['admin-auth'],
   async asyncData({store, route}) {
-    const brand = await store.dispatch('brands/findById', route.params.id)
-    return { brand }
+    try {
+      const brand = await store.dispatch('brands/findById', route.params.id)
+      return { brand }
+    } catch (e) {
+      console.log(e)
+    }
   },
   data(){
     return{
@@ -105,6 +110,14 @@ export default {
         }
       });
     },
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 3) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
 }
 </script>

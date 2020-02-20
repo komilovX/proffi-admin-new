@@ -140,26 +140,33 @@
                 prop="amount"
                 label="Кол-во"
                 align="center"
-                width="250"
+                width="200"
                 />
                 <el-table-column
                 label="Цена за единицу"
                 align="center"
-                width="250"
+                width="200"
                 >
-                  <template slot-scope="{row: {cost}}">
-                    {{ formatCurrency(cost) }}
+                  <template slot-scope="{row: {price}}">
+                    {{ formatCurrency(price) }}
                   </template>
                 </el-table-column>
                 <el-table-column
                 label="Общая сумма"
                 align="right"
                 >
-                  <template slot-scope="{row: {cost, amount}}">
-                    {{ formatCurrency(cost*amount) }}
+                  <template slot-scope="{row: {amount, price}}">
+                    {{ formatCurrency(amount*price) }}
                   </template>
                 </el-table-column>
               </el-table>
+              <div class="delivery p1">
+                <i class="mr1">Доставка</i>{{formatCurrency(row.delivery)}} sum
+              </div>
+              <div class="p1 df">
+                <b class="mr1">Итого: </b>
+                {{formatCurrency(row.total)}} sum
+              </div>
           </template>
         </el-table-column>
             <el-table-column
@@ -235,7 +242,6 @@
   </div>
 </template>
 <script>
-import $ from 'jquery'
 export default {
   async asyncData({store, error}) {
     try {
@@ -245,7 +251,7 @@ export default {
       const activeOrders = orders.filter(o => o.status == 3)
       return {newOrders, processOrders, activeOrders}
     } catch (e) {
-      error(e)
+      console.log(e)
     }
   },
   data: () => ({
@@ -284,23 +290,30 @@ export default {
         <div><strong>Телефон клиента: </strong>${order.phone}</div>
         <div><strong>Оплата: </strong>${order.order_type}</div>
         <div><strong>Система: </strong>${order.system}</div>
-        <div><strong>Адрес клиента: </strong>${order.address}</div>
-        <table>
-          <tr>
+        <div style="margin-bottom: .5rem"><strong>Адрес клиента: </strong>${order.address}</div>
+        <table style="margin-bottom: .5rem">
+          <tr style="text-align: center; padding: 4px">
             <th>Товар</th>
             <th>Кол-во</th>
             <th>Цена</th>
           </tr>
            ${product.map(p =>{
              return `
-             <tr>
+             <tr style="text-align: center; padding: 4px">
               <td>${p.name}</td>
               <td>${p.amount}</td>
-              <td>${p.cost}</td>
+              <td>${p.price}</td>
              </tr>
              `
            }).join('')}
         </table>
+        <div style="padding: .5rem">
+          <i style="margin-right: 1rem">Доставка</i>${order.delivery} sum
+        </div>
+        <div style="padding: .5rem">
+          <b style="margin-right: 1rem">Итого: </b>
+          ${order.total} sum
+        </div>
       `
       let newWin= window.open("");
       newWin.document.write(html);
@@ -329,6 +342,15 @@ export default {
     rowClassName({row, rowIndex}) {
       return 'table-header'
     },
+
+  },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 4) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
   },
   computed: {
     ioOrder() {
@@ -342,6 +364,12 @@ export default {
   }
 }
 </script>
+<style>
+  .el-table .table-header {
+    color:#999999;
+    font-size: 12px;
+  }
+</style>
 <style scoped lang="scss">
   .info div{
     margin-bottom: 8px;

@@ -23,9 +23,8 @@
               <div class="bottom clearfix mb1" style="float: right" v-if="order.status == 1">
                 <el-tooltip content="Добавить ожидающий" placement="top">
                   <el-button type="warning" icon="el-icon-question" @click="addToProcess" :loading="processLoading"/>
-
                 </el-tooltip>
-                <el-tooltip content="отправить sms" placement="top">
+                <el-tooltip content="отправить sms" placement="top" v-if="order.chat_id">
                   <el-button type="primary" icon="el-icon-message" @click="templateVisible = true" />
                 </el-tooltip>
               </div>
@@ -46,7 +45,7 @@
                 <el-table-column
                 prop="name"
                 label="Товар"
-                width="220"
+                width="200"
                 show-overflow-tooltip
                 />
                 <el-table-column
@@ -58,9 +57,10 @@
                 />
                 <el-table-column
                 label="Общая сумма"
+                align="center"
                 >
-                  <template slot-scope="{row: {amount, cost}}">
-                    {{formatCurrency(amount*cost)}}
+                  <template slot-scope="{row: {amount, price}}">
+                    {{formatCurrency(amount*price)}}
                   </template>
                 </el-table-column>
                 <el-table-column
@@ -68,13 +68,16 @@
                   <template slot-scope="{row}" class="plus-minus">
                     <i class="el-icon-minus mr05" @click="minusAmount(row)" />
                     <i class="el-icon-plus mr1" @click="plusAmount(row)" />
-                    <i class="el-icon-delete-solid" id="delete" @click="deleteItem(row)" />
+                    <i class="el-icon-delete-solid" id="delete" @click="deleteItem(row)" v-if="ordered_products.length != 1" />
                   </template>
                 </el-table-column>
               </el-table>
+              <div class="delivery p1">
+                <i class="mr1">Доставка</i>{{formatCurrency(order.delivery)}} sum
+              </div>
               <div class="p1 df-sb">
-                <h5>Итого</h5>
-                {{calculateTotal}}
+                <b>Итого</b>
+                {{calculateTotal}} sum
               </div>
               <div class="df-sb mt1">
                 <el-button type="primary" plain size="medium" :loading="loading" @click="addProducts">Добавить товар</el-button>
@@ -125,7 +128,7 @@
     </el-dialog>
     <!-- Send Messages -->
     <el-dialog
-    title="Xabar jo'natish"
+    title="Отправка сообщений"
     :visible.sync="templateVisible"
     width="50%"
     >
@@ -150,7 +153,7 @@ export default {
       const order = await store.dispatch('order/findById', route.params.id)
       return {order, ordered_products: JSON.parse(order.products)}
     } catch (e) {
-      error(e)
+      console.log(e)
     }
   },
   data(){
@@ -163,6 +166,7 @@ export default {
       template: '',
       dialogTableVisible: false,
       templateVisible: false,
+      total: null,
       products: null,
       selectedProducts: []
     }
@@ -205,7 +209,7 @@ export default {
           this.loading = true
           const {data, size} = await this.$store.dispatch('product/findAllProducts',{page: 1, limit: 50})
           this.products = data.map(p => {
-            return {name: p.name, amount: 1, cost: p.price}
+            return {id: p.id, name: p.name, amount: 1, price: p.price}
           })
           this.size = size
           this.loading = false
@@ -227,7 +231,10 @@ export default {
       this.selectedProducts = val
     },
     addSelectedProduct() {
-      this.ordered_products = this.ordered_products.concat(this.selectedProducts)
+      this.selectedProducts.forEach(v => {
+        const index = this.ordered_products.findIndex(p => p.id == v.id)
+        index != -1 ? this.ordered_products[index].amount += v.amount : this.ordered_products.push(v)
+      })
       this.$refs.multipleTable.clearSelection();
       this.dialogTableVisible = false
     },
@@ -260,7 +267,7 @@ export default {
       .then(async () => {
         try {
           this.processLoading = true
-          await this.$store.dispatch('order/changeStatus',{id: this.$route.params.id, status: 3})
+          await this.$store.dispatch('order/acceptOrder',{id: this.$route.params.id, status: 3, total: this.total, products: JSON.stringify(this.ordered_products) })
           await this.$store.dispatch('supply/changeResidue', JSON.stringify(this.ordered_products))
           this.$message.success("заказ подтвержден")
           this.$router.push('/orders/online')
@@ -311,7 +318,7 @@ export default {
         this.loading2 = true
         const {data, size} = await this.$store.dispatch('product/findAllProducts',{page: 1, limit: 50})
         this.products = data.map(p => {
-            return {name: p.name, amount: 1, cost: p.price}
+            return {id: p.id, name: p.name, amount: 1, price: p.price}
           })
         this.size = size
         this.loading2 = false
@@ -321,9 +328,18 @@ export default {
       }
     },
   },
+  validate({store}) {
+    const role = store.getters['auth/userRole']
+    if (role != 4) {
+      return true
+    }
+    store.dispatch('setAuthError', true)
+    return false
+  },
   computed: {
     calculateTotal() {
-      const total = this.ordered_products.reduce((acc, val) => acc+(Number(val.amount*val.cost)),0)
+      const total = this.ordered_products.reduce((acc, val) => acc+(Number(val.amount*val.price)),0) + this.order.delivery
+      this.total = total
       return new Intl.NumberFormat('ru').format(total)
     },
   }
@@ -369,5 +385,8 @@ export default {
   }
   .bottom i{
     font-size: 22px;
+  }
+  .delivery {
+    font-size: 16px
   }
 </style>
