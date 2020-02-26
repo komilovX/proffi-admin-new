@@ -19,6 +19,9 @@
             <el-option v-for="c in brands" :key="c.id" :label="c.name" :value="c.id" />
           </el-select>
         </el-form-item>
+        <el-form-item label="Штрихкод" prop="barcode" >
+          <el-input type="text" v-model="productForm.barcode" class="maxW35"></el-input>
+        </el-form-item>
         <el-form-item label="Комментарий" prop="comment">
           <el-input
             class="maxW35"
@@ -79,6 +82,7 @@ export default {
         name: '',
         category: null,
         brand_id: null,
+        barcode: '',
         comment: '',
       },
       rules:{
@@ -135,6 +139,7 @@ export default {
             category_name: name,
             brand: brand.name,
             brand_id: this.productForm.brand_id,
+            barcode: this.productForm.barcode,
             image: this.file.raw,
             comment: this.productForm.comment
           }

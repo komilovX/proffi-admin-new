@@ -1,7 +1,10 @@
 
 module.exports = {
   mode: 'spa',
-
+  // server: {
+  //   port: 8000,
+  //   host: '207.154.223.158'
+  // },
   head: {
     title: process.env.npm_package_name || '',
     meta: [

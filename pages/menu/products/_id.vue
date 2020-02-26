@@ -15,15 +15,23 @@
               <el-option v-for="c in categoryList" :key="c.id" :label="c.name" :value="c.id" :style="{'padding-left':c.padding+'px'}"/>
             </el-select>
           </el-form-item>
-        <el-form-item label="Комментарий" prop="comment">
-          <el-input
-            class="maxW35"
-            type="textarea"
-            :rows="3"
-            placeholder="Please input"
-            v-model="productForm.comment">
-          </el-input>
-        </el-form-item>
+          <el-form-item label="Бранд" prop="brand">
+            <el-select v-model="productForm.brand_id" style="min-width:35vw">
+              <el-option v-for="c in brands" :key="c.id" :label="c.name" :value="c.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="Штрихкод" prop="barcode" >
+            <el-input type="text" v-model="productForm.barcode" class="maxW35"></el-input>
+          </el-form-item>
+          <el-form-item label="Комментарий" prop="comment">
+            <el-input
+              class="maxW35"
+              type="textarea"
+              :rows="3"
+              placeholder="Please input"
+              v-model="productForm.comment">
+            </el-input>
+          </el-form-item>
           <el-form-item label="Фотография">
             <img v-image="product.photo" class="mb1">
             <el-upload
@@ -57,7 +65,8 @@ export default {
         await store.dispatch('category/findAllCategories')
       }
       const product = await store.dispatch('product/findProductById', route.params.id)
-      return { product }
+      const {data} = await store.dispatch('brands/findAllBrands', {page:1, limit: 100})
+      return { product, brands: data }
     } catch (error) {
       console.log(e)
     }
@@ -69,12 +78,17 @@ export default {
       productForm: {
         name: '',
         category: null,
+        brand_id: null,
+        barcode: '',
         comment: '',
       },
       rules:{
         name: [
           { required: true, message: 'Пожалуйста, введите название деятельности', trigger: 'blur' },
           { min: 3, message: 'Длина должна быть не менее 3 букв', trigger: 'blur' }
+        ],
+        brand_id: [
+          { required: true, message: 'Пожалуйста, введите название деятельности', trigger: 'change' }
         ],
         comment: [
           { required: true, message: 'Пожалуйста, введите название деятельности', trigger: 'blur' }
@@ -86,6 +100,8 @@ export default {
   mounted() {
     this.productForm.name = this.product.name
     this.productForm.category = this.product.category_id
+    this.productForm.brand_id = this.product.brand_id
+    this.productForm.barcode = this.product.barcode
     this.productForm.comment = this.product.comment
   },
   methods:{
@@ -115,11 +131,15 @@ export default {
         if (valid) {
           this.loading = true
           let {name} = this.$store.getters['category/categories'].find(f => f.id == this.productForm.category)
+          const brand = this.brands.find(v => v.id == this.productForm.brand_id)
           const formData = {
             id: this.$route.params.id,
             name: this.productForm.name,
             category_id: this.productForm.category,
             category_name: name,
+            brand: brand.name,
+            brand_id: this.productForm.brand_id,
+            barcode: this.productForm.barcode,
             image: this.file?this.file.raw : null,
             comment: this.productForm.comment
           }

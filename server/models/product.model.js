@@ -13,6 +13,7 @@ const Product = sequelize.define('products', {
   category_id: Sequelize.INTEGER,
   brand: Sequelize.STRING,
   brand_id: Sequelize.INTEGER,
+  barcode: Sequelize.STRING,
   price: {
     type: Sequelize.STRING,
     defaultValue: 0

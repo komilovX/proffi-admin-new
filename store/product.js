@@ -7,6 +7,7 @@ export const actions = {
       fd.append('category_name', form.category_name)
       fd.append('brand', form.brand)
       fd.append('brand_id', form.brand_id)
+      fd.append('barcode', form.barcode)
       fd.append('image', form.image, form.image.name)
       fd.append('comment', form.comment)
       return await this.$axios.$post('api/menu/product', fd)
@@ -38,6 +39,9 @@ export const actions = {
         fd.append('name', form.name)
         fd.append('category_id', form.category_id)
         fd.append('category_name', form.category_name)
+        fd.append('brand', form.brand)
+        fd.append('brand_id', form.brand_id)
+        fd.append('barcode', form.barcode)
         fd.append('image', form.image, form.image.name)
         fd.append('comment', form.comment)
       }
@@ -45,6 +49,9 @@ export const actions = {
         fd.append('name', form.name)
         fd.append('category_id', form.category_id)
         fd.append('category_name', form.category_name)
+        fd.append('brand', form.brand)
+        fd.append('brand_id', form.brand_id)
+        fd.append('barcode', form.barcode)
         fd.append('comment', form.comment)
       }
       return await this.$axios.$put(`api/menu/product/${form.id}`, fd)
