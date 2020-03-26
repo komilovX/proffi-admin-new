@@ -20,6 +20,7 @@ import { Navbar, Sidebar } from '@/components/LayoutComponents'
 import ResizeMixin from '@/mixins/ResizeHandler'
 
 export default {
+  middleware: ['admin-auth'],
   data() {
     return {
       mValue: '',

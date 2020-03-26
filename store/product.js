@@ -24,6 +24,14 @@ export const actions = {
       throw error
     }
   },
+  async findAllProductsWithoutPagination({commit}) {
+    try {
+      return await this.$axios.$get(`api/menu/product`)
+    } catch (error) {
+      commit('setError',error, { root: true })
+      throw error
+    }
+  },
   async findProductById({commit}, id) {
     try {
       return await this.$axios.$get(`api/menu/product/${id}`)

@@ -17,6 +17,12 @@ const Users = sequelize.define('users', {
   orders: {
     type: Sequelize.INTEGER,
     defaultValue: 0
+  },
+  favorite: {
+    type: Sequelize.STRING
+  },
+  cart: {
+    type: Sequelize.STRING
   }
 })
 module.exports = Users

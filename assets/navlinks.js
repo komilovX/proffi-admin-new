@@ -17,9 +17,11 @@ export const navlinks =[
   {name:'Активные Клиенты',path:'/active'},
   {name:'Доступ',path:'/access', icon: 'el-icon-unlock'},
   {name:'Отп-сооб',path:'/send_message', icon: 'el-icon-s-promotion'},
-  {name:'Отмененные заказы',path:'/canceled'},
-  {name:'Доставление заказы',path:'/delivered'},
-
+  {name:'Упр-магазин', path:'/manage_shop', icon: 'el-icon-goods'},
+  {name:'Слайдер', path:'/shop_carousel'},
+  {name:'Категории', path:'/shop_category'},
+  {name:'Отмененные заказы', path:'/canceled'},
+  {name:'Доставление заказы', path:'/delivered'},
 ]
 export const routes =[
   {name:'Главная',path:'/',icon:'el-icon-s-home', origin:'/'},
@@ -39,6 +41,9 @@ export const routes =[
   {name:'Все клиенты', path:'/all_users', origin: '/users/all_users'},
   {name:'Активные Клиенты', path:'/active', origin: '/users/active'},
   {name:'Отправка сообщение',path:'/send_message', icon: 'el-icon-s-promotion',  origin:'/send_message'},
+  {name:'Управлять магазин', path:'/manage_shop', origin:'/manage_shop', hidden: true},
+  {name:'Категории', path:'/shop_category', origin:'/manage_shop/shop_category'},
+  {name:'Слайдер', path:'/shop_carousel', origin:'/manage_shop/shop_carousel'},
   {name:'Доставление заказы',path:'/delivered',origin:'/delivered'},
   {name:'Отмененные заказы',path:'/canceled',origin:'/canceled'},
   //
@@ -54,12 +59,15 @@ export const routes =[
 ]
 
 export const sortlinks = [
-  {path:'/'},
+  {path: '/'},
   {path: '/orders'},
   {path: '/menu'},
   {path: '/storage'},
   {path: '/users'},
-  {path:'/send_message'},
-  {path:'/access'},
+  {path: '/send_message'},
+  {path: '/manage_shop'},
+  {path: '/access'},
 ]
-export const hiddenChildren = ['categories_form', 'products_form', 'suppliers_form', 'store_form', 'supply_form', 'access_form', 'brands_form']
+export const hiddenChildren = ['categories_form', 'products_form', 'suppliers_form',
+  'store_form', 'supply_form', 'access_form', 'brands_form', 'carousel_form', 'shop_category_form'
+]

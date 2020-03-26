@@ -19,8 +19,6 @@
 <script>
 
 export default {
-  mounted() {
-  },
   computed: {
     message() {
       if (this.$store.getters.authError) {
@@ -28,7 +26,7 @@ export default {
       }
       return 'Мы сделали все что могли, но так и не нашли эту страницу на сайте.'
     }
-  }
+  },
 }
 </script>
 

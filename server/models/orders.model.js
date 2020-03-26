@@ -30,7 +30,7 @@ const Orders = sequelize.define('orders', {
     type: Sequelize.FLOAT,
     defaultValue: 0
   },
-  products: Sequelize.STRING,
+  products: Sequelize.TEXT('long'),
   status: {
     type: Sequelize.INTEGER,
     defaultValue: 1

@@ -75,7 +75,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <app-pagination :size="size" @paginationChange="currentChange($event)" v-if="size > 30" />
+      <app-pagination :size="size" @paginationChange="currentChange($event)" :limit="30" v-if="size > 30" />
     </div>
   </div>
 </template>
@@ -119,7 +119,7 @@ export default {
     async currentChange(val) {
       try {
         this.loading = true
-        const response = await this.$store.dispatch('product/findAllProducts',{page: val, limit: 30})
+        const response = await this.$store.dispatch('product/findAllProducts',{page: val, limit: 10})
         this.products = response.data
         this.size = response.size
         this.loading = false

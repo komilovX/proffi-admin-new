@@ -16,7 +16,12 @@ module.exports = function (model) {
         break;
       case 'products':
         const products = await Products.findAll({order: [['name','ASC']], raw: true})
-        res.result = calculus(products, req)
+        if (!req.query.limit) {
+          res.result = products
+        }
+        else {
+          res.result = calculus(products, req)
+        }
         next()
         break;
       case 'remainder':

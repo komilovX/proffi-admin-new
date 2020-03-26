@@ -9,7 +9,7 @@ export const state = () => ({
 
 export const mutations = {
   setToken(state, token) {
-    this.$axios.setToken(token,'Bearer')
+    this.$axios.setToken(token, 'Bearer')
     Cookies.set('jwt-token',token)
     state.token = token
   },
