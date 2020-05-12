@@ -3,6 +3,7 @@
     <el-pagination
       background
       layout="prev, pager, next"
+      :current-page="currentPage"
       @current-change="currentChange"
       :total="size*10/limit">
     </el-pagination>
@@ -14,7 +15,11 @@ export default {
     size: Number,
     limit: {
       type: Number,
-      default: 30
+      default: process.env.limit
+    },
+    currentPage: {
+      type: Number,
+      default: 1
     }
   },
   methods: {

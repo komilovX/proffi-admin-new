@@ -2,10 +2,18 @@
 export const actions = {
   async findAllBrands({commit}, {page = 1, limit = 30}) {
     try {
-      return await this.$axios.$get(`api/menu/brands?page=${page}&limit=${limit}`)
+      return await this.$axios.$get(`api/menu/brands?page=${page}&limit=${process.env.limit}`)
     } catch (e) {
       commit('setError', e, {root: true})
       throw e
+    }
+  },
+  async searchBrands({commit}, text) {
+    try {
+      return await this.$axios.$get(`api/menu/brands?search=${text}`, {progress: false})
+    } catch (error) {
+      commit('setError',error, { root: true })
+      throw error
     }
   },
   async createBrand({commit}, {name, photo}) {

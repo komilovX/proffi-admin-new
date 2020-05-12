@@ -12,7 +12,7 @@ export default {
   },
   computed: {
     currentRole() {
-     return 'SimplePage'
+      return 'SimplePage'
     }
   },
   methods: {

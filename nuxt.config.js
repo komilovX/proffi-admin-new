@@ -42,9 +42,15 @@ module.exports = {
   modules: [
     '@nuxtjs/axios',
     '@nuxtjs/pwa',
-    '@nuxtjs/svg'
+    '@nuxtjs/svg',
+    '@nuxtjs/dotenv'
   ],
 
+  env: {
+    limit: 10,
+    baseUrl: 'http://localhost:3000',
+    secondUrl: 'http://207.154.223.158:8000'
+  },
 
   axios: {
   },

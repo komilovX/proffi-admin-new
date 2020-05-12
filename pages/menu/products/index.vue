@@ -6,22 +6,22 @@
     </div>
     <div class="p1 search">
       <el-input
-      v-model="search"
+        v-model="search"
         placeholder="Быстрый поиск"
         prefix-icon="el-icon-search"
         size="medium"
+        @input="onInput"
       >
       </el-input>
     </div>
     <div class="table p05">
       <el-table
       v-loading="loading"
-      :data="products.filter(val => !search || val.name.toLowerCase().includes(search.toLowerCase()) || val.category_name.toLowerCase().includes(search.toLowerCase()))"
+      :data="data"
       tooltip-effect="light"
       :row-class-name="tableRowClassName"
       :header-row-class-name="rowClassName"
       style="width: 100%">
-
         <el-table-column
         min-width="300"
         label="Название"
@@ -35,18 +35,18 @@
           </template>
         </el-table-column>
         <el-table-column
-        min-width="200"
-        prop="category_name"
-        label="Категория"
-        align="left"
-        show-overflow-tooltip
+          min-width="200"
+          prop="category_name"
+          label="Категория"
+          align="left"
+          show-overflow-tooltip
         />
         <el-table-column
-        min-width="180"
-        prop="brand"
-        label="Бренд"
-        align="left"
-        show-overflow-tooltip
+          min-width="180"
+          prop="brand"
+          label="Бренд"
+          align="left"
+          show-overflow-tooltip
         />
         <el-table-column
         label="Цена"
@@ -60,8 +60,8 @@
             <div class="red df">
               <nuxt-link :to='`/menu/products/${id}`' tag="a" class="mr1">Ред</nuxt-link>
               <el-dropdown
-              trigger="click"
-              @command="handleCommand"
+                trigger="click"
+                @command="handleCommand"
               >
                 <span class="el-dropdown-link">
                   <i class="el-icon-more"></i>
@@ -75,7 +75,11 @@
           </template>
         </el-table-column>
       </el-table>
-      <app-pagination :size="size" @paginationChange="currentChange($event)" :limit="30" v-if="size > 30" />
+      <app-pagination
+        :size="size"
+        @paginationChange="currentChange($event)"
+        :currentPage="+($route.query.page)"
+        :limit="10" v-if="size > 10 && pagination" />
     </div>
   </div>
 </template>
@@ -84,22 +88,27 @@
 import AppPagination from '@/components/AppPagination'
 export default {
   middleware: ['admin-auth'],
-  async asyncData({store, error}) {
+  async asyncData({store, error, route}) {
     try {
-      const {data, size} = await store.dispatch('product/findAllProducts',{page: 1, limit: 30})
+      const {data, size} = await store.dispatch('product/findAllProducts',
+                                {page: route.query.page || 1});
+
       return {products: data, size}
     } catch (e) {
       console.log(e)
     }
   },
   data: () => ({
+    data: [],
     search: '',
     loading: false,
+    pagination: true,
     hiddenRows: [],
     hideStatus: 'Скрыть во всех заведениях',
   }),
   components: {AppPagination},
   mounted() {
+    this.data = this.products
     this.products.filter(f => {
       if (f.hidden == 1) {
         this.hiddenRows.push(f.id)
@@ -107,6 +116,20 @@ export default {
     })
   },
   methods:{
+    async onInput(val) {
+      if (!val) {
+        this.data = this.products
+        this.pagination = true
+      } else {
+        try {
+          const product = await this.$store.dispatch('product/searchProducts', val);
+          this.data = product
+          this.pagination = false
+        } catch (e) {
+          console.log(e)
+        }
+      }
+    },
     goToForm(){
       this.$router.push(`/menu/products_form`)
     },
@@ -119,8 +142,9 @@ export default {
     async currentChange(val) {
       try {
         this.loading = true
-        const response = await this.$store.dispatch('product/findAllProducts',{page: val, limit: 10})
-        this.products = response.data
+        const response = await this.$store.dispatch('product/findAllProducts',{page: val})
+        this.$router.push({ path: this.$route.path, query: {page: val } })
+        this.data = response.data
         this.size = response.size
         this.loading = false
       } catch (e) {

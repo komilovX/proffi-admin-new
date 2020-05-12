@@ -1,4 +1,5 @@
-const Op = require('sequelize').Op;
+const sequelize = require('sequelize');
+const Op = sequelize.Op;
 const Brands = require('../models/brand.model');
 const Products = require('../models/product.model');
 const Remainder = require('../models/remainder.model');
@@ -10,11 +11,23 @@ module.exports = function (model) {
    try {
     switch (model) {
       case 'brand':
+        if(req.query.search) {
+          let data = await searchItems(req, Brands)
+          res.result = data;
+          next()
+          break;
+        }
         const brands = await Brands.findAll({order: [['name','ASC']], raw: true})
         res.result = calculus(brands, req)
         next()
         break;
       case 'products':
+        if(req.query.search) {
+          let data = await searchItems(req, Products)
+          res.result = data;
+          next()
+          break;
+        }
         const products = await Products.findAll({order: [['name','ASC']], raw: true})
         if (!req.query.limit) {
           res.result = products
@@ -25,16 +38,34 @@ module.exports = function (model) {
         next()
         break;
       case 'remainder':
+        if(req.query.search) {
+          let data = await searchItems(req, Remainder)
+          res.result = data;
+          next()
+          break;
+        }
         const remainder = await Remainder.findAll({order: [['residue','ASC']], raw: true})
         res.result = calculus(remainder, req)
         next()
         break;
       case 'supply':
+        if(req.query.search) {
+          let data = await searchItems(req, Supply)
+          res.result = data;
+          next()
+          break;
+        }
         const supply = await Supply.findAll({order: [['date','DESC']], raw: true})
         res.result = calculus(supply, req)
         next()
         break;
       case 'users':
+        if(req.query.search) {
+          let data = await searchItems(req, Users)
+          res.result = data;
+          next()
+          break;
+        }
         const users = await Users.findAll({order: [['first_name','ASC']], raw: true})
         res.result = calculus(users, req)
         next()
@@ -63,13 +94,28 @@ module.exports = function (model) {
 }
 
 function calculus(model, req) {
-    let page = req.query.page
+    let page = +req.query.page
     let limit = +req.query.limit
     const result = {}
-    const startIndex = (+page-1) * limit
-    const endIndex = +page*limit
+    const startIndex = (page-1) * limit
+    const endIndex = page*limit
     result.data = model.slice(startIndex, endIndex)
     result.size = model.length
     return result
+  }
+}
+
+async function searchItems(req, Model) {
+  try {
+    const query = req.query.search.toLowerCase();
+    const data = await Model.findAll({
+      limit: 30,
+      where: {
+        name: sequelize.where(sequelize.fn('LOWER', sequelize.col('name')), 'LIKE', '%' + query + '%')
+      }
+    })
+    return data
+  } catch (e) {
+    throw e
   }
 }

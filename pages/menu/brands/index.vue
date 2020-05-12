@@ -10,12 +10,13 @@
         placeholder="Быстрый поиск"
         prefix-icon="el-icon-search"
         size="medium"
+        @input="onInput"
       >
       </el-input>
     </div>
     <div class="table p05 ctg">
       <el-table
-      :data="brands.filter(val => !search || val.name.toLowerCase().includes(search.toLowerCase()))"
+      :data="data"
       v-loading="loading"
       style="width: 100%"
       >
@@ -52,7 +53,11 @@
           </template>
         </el-table-column>
       </el-table>
-      <app-pagination :size="size" @paginationChange="currentChange($event)" v-if="size > 30" />
+      <app-pagination
+        v-if="size > 30 && pagination"
+        :size="size"
+        :currentPage="+($route.query.page)"
+        @paginationChange="currentChange($event)"/>
     </div>
   </div>
 </template>
@@ -61,28 +66,49 @@
 import AppPagination from '@/components/AppPagination'
 export default {
   middleware: ['admin-auth'],
-  async asyncData({store, error}) {
+  async asyncData({store, route, error}) {
     try {
-      const {data, size} = await store.dispatch('brands/findAllBrands',{page: 1, limit: 30})
+      const {data, size} = await store.dispatch('brands/findAllBrands',
+        {page: route.query.page || 1})
       return {brands: data, size}
     } catch (e) {
       console.log(e)
     }
   },
   data: () => ({
+    data: [],
     search: '',
-    loading: false
+    pagination: true,
+    loading: false,
   }),
   components: {AppPagination},
+  mounted() {
+    this.data = this.brands
+  },
   methods:{
     goToForm(){
       this.$router.push(`/menu/brands_form`)
     },
+    async onInput(val) {
+      if (!val) {
+        this.data = this.brands
+        this.pagination = true
+      } else {
+        try {
+          const brands = await this.$store.dispatch('brands/searchBrands', val);
+          this.data = brands
+          this.pagination = false
+        } catch (e) {
+          console.log(e)
+        }
+      }
+    },
     async currentChange(val) {
       try {
         this.loading = true
-        const response = await this.$store.dispatch('brands/findAllBrands',{page: val, limit: 30})
-        this.brands = response.data
+        const response = await this.$store.dispatch('brands/findAllBrands', {page: val})
+        this.$router.push({ path: this.$route.path, query: {page: val } })
+        this.data = response.data
         this.size = response.size
         this.loading = false
       } catch (e) {
