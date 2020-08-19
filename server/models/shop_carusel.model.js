@@ -1,8 +1,12 @@
-const Sequelize = require('sequelize');
-const sequelize = require('../database');
+const Sequelize = require("sequelize");
+const sequelize = require("../database");
 
-const ShopPhotos = sequelize.define('shop_photo', {
-  photo: {
+const ShopPhotos = sequelize.define("shop_photo", {
+  image_small: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  image_large: {
     type: Sequelize.STRING,
     allowNull: false
   },
@@ -14,6 +18,6 @@ const ShopPhotos = sequelize.define('shop_photo', {
     type: Sequelize.STRING,
     allowNull: false
   }
-})
+});
 
-module.exports = ShopPhotos
+module.exports = ShopPhotos;

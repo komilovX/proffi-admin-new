@@ -169,7 +169,7 @@ module.exports.updateProductById = async (req, res) => {
     if (req.file) {
       const product = await Product.findByPk(+req.params.id)
       let photo = product.photo.replace('/','')
-      let way = path.resolve(__dirname,`../../static/uploads/${photo}`)
+      let way = path.resolve(__dirname, `../../static/uploads/${photo}`)
       await Product.update(
         {
           name: req.body.name,

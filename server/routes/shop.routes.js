@@ -1,51 +1,43 @@
-const {Router} = require('express')
-const upload = require('../middleware/upload');
-const router = Router()
-const ctr = require('../controller/shop.controller');
+const { Router } = require("express");
+const upload = require("../middleware/upload");
+const router = Router();
+const ctr = require("../controller/shop.controller");
 
 // api/shop/carusel
-router.get('/carusel',
-  ctr.findAllCarusel
-)
+router.get("/carusel", ctr.findAllCarusel);
 
-router.post('/carusel',
-  upload.single('image'),
+router.post(
+  "/carusel",
+  upload.fields([
+    { name: "image_small", maxCount: 1 },
+    { name: "image_large", maxCount: 1 }
+  ]),
   ctr.createCarusel
-)
+);
 
-router.get('/carusel/:id',
-  ctr.findCaruselById
-)
+router.get("/carusel/:id", ctr.findCaruselById);
 
-router.put('/carusel/:id',
-  upload.single('image'),
+router.put(
+  "/carusel/:id",
+  upload.fields([
+    { name: "image_small", maxCount: 1 },
+    { name: "image_large", maxCount: 1 }
+  ]),
   ctr.updateCaruselById
-)
+);
 
-router.delete('/carusel/:id',
-  ctr.deleteCaruselById
-)
+router.delete("/carusel/:id", ctr.deleteCaruselById);
 
 // api/shop/category
 
-router.get('/category',
-  ctr.findAllCategories
-)
+router.get("/category", ctr.findAllCategories);
 
-router.post('/category',
-  ctr.createCategory
-)
+router.post("/category", ctr.createCategory);
 
-router.get('/category/:id',
-  ctr.findCategoryById
-)
+router.get("/category/:id", ctr.findCategoryById);
 
-router.put('/category/:id',
-  ctr.updateCategoryById
-)
+router.put("/category/:id", ctr.updateCategoryById);
 
-router.delete('/category/:id',
-  ctr.deleteCategoryById
-)
+router.delete("/category/:id", ctr.deleteCategoryById);
 
-module.exports = router
+module.exports = router;
